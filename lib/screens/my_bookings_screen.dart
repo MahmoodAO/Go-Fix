@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homemate/models/booking.dart';
-import 'package:homemate/models/status_info.dart';
+import 'package:homemate/core/constants/status_info.dart';
 import 'package:homemate/services/booking_service.dart';
 import 'package:homemate/screens/booking_details_screen.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة حجوزاتي – تعرض جميع حجوزات المستخدم الحالي من Firestore.
 /// MyBookingsScreen – shows all bookings for the current user in real-time.

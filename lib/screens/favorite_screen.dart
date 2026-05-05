@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:homemate/screens/services_item.dart';
+import 'package:homemate/core/widgets/services_item.dart';
 import 'package:homemate/services/favorites_services.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
-import 'package:homemate/providers/theme_provider.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/theme/theme_provider.dart';
+import 'package:homemate/core/utils/price_utils.dart';
 
 class FavoriteServicesScreen extends StatefulWidget {
   const FavoriteServicesScreen({super.key});

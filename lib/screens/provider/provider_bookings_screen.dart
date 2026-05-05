@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homemate/models/booking.dart';
 import 'package:homemate/services/booking_service.dart';
 import 'package:homemate/widgets/provider_booking_card.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// Provider Bookings Screen – shows ONLY accepted/rejected bookings (no pending).
 class ProviderBookingsScreen extends StatefulWidget {

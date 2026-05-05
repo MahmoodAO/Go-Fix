@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:homemate/theme/app_theme.dart';
-import 'package:homemate/services/local_storage_service.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
 
 class WelcomScreen extends StatefulWidget {
   static String id = 'welcomScreen';

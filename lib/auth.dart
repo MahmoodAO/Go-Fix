@@ -5,7 +5,7 @@ import 'package:homemate/screens/tabs_screen.dart';
 import 'package:homemate/screens/provider/provider_tabs_screen.dart';
 import 'package:homemate/screens/Admin_screen.dart';
 import 'package:homemate/services/user_service.dart';
-import 'package:homemate/services/local_storage_service.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
 
 /// StreamBuilder-based auth gate used by the 'auth' named route.
 /// Now role-aware: routes admin → AdminScreen, provider → ProviderTabsScreen.

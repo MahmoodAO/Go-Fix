@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:homemate/models/status_info.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/constants/status_info.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 void main() {

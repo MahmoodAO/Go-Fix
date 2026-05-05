@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:homemate/providers/theme_provider.dart';
-import 'package:homemate/theme/app_theme.dart';
-import 'package:homemate/services/local_storage_service.dart';
+import 'package:homemate/core/theme/theme_provider.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
 import 'package:homemate/screens/profile_info_screen.dart';
+import 'package:homemate/services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   bool _notificationsEnabled = true;
+  final AuthService _authService = AuthService();
 
   Widget _buildSectionHeader(String title) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -414,7 +416,7 @@ class _SettingScreenState extends State<SettingScreen> {
           ElevatedButton(
             onPressed: () async {
               await LocalStorageService.clear();
-              await FirebaseAuth.instance.signOut();
+              await _authService.signOut();
               if (mounted) {
                 Navigator.of(context).pushNamedAndRemoveUntil('login', (_) => false);
               }

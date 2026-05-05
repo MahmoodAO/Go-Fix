@@ -6,8 +6,8 @@ import 'package:homemate/models/category.dart';
 import 'package:homemate/models/service.dart';
 import 'package:homemate/services/category_service.dart';
 import 'package:homemate/services/service_service.dart';
-import 'package:homemate/theme/app_theme.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/core/utils/price_utils.dart';
 
 class AddService extends StatefulWidget {
   final Service? serviceToEdit;

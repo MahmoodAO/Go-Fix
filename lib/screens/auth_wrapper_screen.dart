@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:homemate/services/local_storage_service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// Splash/auth decision screen shown at app startup.
 /// Checks local storage to decide whether to show the main app or welcome/login.

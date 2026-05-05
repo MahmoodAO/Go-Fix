@@ -17,7 +17,7 @@ import 'package:homemate/screens/booking_details_screen.dart';
 import 'package:homemate/screens/profile_info_screen.dart';
 import 'package:homemate/screens/generate_report.dart';
 
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import './screens/filters_screen.dart';
 import 'package:homemate/screens/welcome_screen.dart';
 import 'package:homemate/screens/tabs_screen.dart';
@@ -28,7 +28,7 @@ import 'package:homemate/screens/auth_wrapper_screen.dart';
 
 
 import 'package:provider/provider.dart';
-import 'package:homemate/providers/theme_provider.dart';
+import 'package:homemate/core/theme/theme_provider.dart';
 import 'package:homemate/services/user_service.dart';
 
 void main() async {

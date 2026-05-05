@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/models/booking.dart';
-import 'package:homemate/models/status_info.dart';
+import 'package:homemate/core/constants/status_info.dart';
 import 'package:homemate/services/booking_service.dart';
 import 'package:homemate/screens/provider/provider_booking_details_screen.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// Shared booking card widget used by both NewRequestsScreen and ProviderBookingsScreen.
 class ProviderBookingCard extends StatefulWidget {

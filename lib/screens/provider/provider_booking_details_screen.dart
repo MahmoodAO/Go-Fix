@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/models/booking.dart';
-import 'package:homemate/models/status_info.dart';
+import 'package:homemate/core/constants/status_info.dart';
 import 'package:homemate/services/booking_service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة تفاصيل الحجز لمزوّد الخدمة – عرض تفاصيل الحجز مع أزرار قبول/رفض/إكمال.
 /// Provider Booking Details Screen – view full booking details and manage status.

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/utils/price_utils.dart';
 
 // enum : لتعريف أنواع ثابتة
 

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/services/auth_service.dart';
 
 class ProfileInfoScreen extends StatefulWidget {
   const ProfileInfoScreen({super.key});
@@ -15,6 +16,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   bool _isInitialLoading = true;
@@ -81,7 +83,10 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       if (user == null) throw Exception('User not authenticated');
 
       // Update Firebase Auth profile
-      await user.updateDisplayName(_nameController.text.trim());
+      await _authService.updateDisplayName(
+        user: user,
+        displayName: _nameController.text.trim(),
+      );
 
       // Save extended profile to Firestore
       await FirebaseFirestore.instance

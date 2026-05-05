@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:homemate/models/category.dart';
-import 'package:homemate/widgets/category_item.dart';
+import 'package:homemate/core/widgets/category_item.dart';
 import 'package:homemate/services/category_service.dart';
-import 'package:homemate/services/local_storage_service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:homemate/screens/services_item.dart';
+import 'package:homemate/core/widgets/services_item.dart';
 import 'package:homemate/services/favorites_services.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/utils/price_utils.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});

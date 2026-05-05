@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -21,6 +22,7 @@ class _SignupScreenState extends State<SignupScreen>
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _agreedToTerms = false;
+  final AuthService _authService = AuthService();
   String _selectedRole = 'customer'; // الدور المختار: customer أو provider
 
   late AnimationController _animController;
@@ -59,7 +61,7 @@ class _SignupScreenState extends State<SignupScreen>
       if (passwordConfirmed() && _fieldsAreValid()) {
         // Create the user with Firebase Auth
         final credential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            await _authService.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -68,7 +70,10 @@ class _SignupScreenState extends State<SignupScreen>
         if (user != null) {
           try {
             // Save displayName to Firebase Auth profile
-            await user.updateDisplayName(_nameController.text.trim());
+            await _authService.updateDisplayName(
+              user: user,
+              displayName: _nameController.text.trim(),
+            );
 
             // Save user profile data to Firestore (including role)
             await FirebaseFirestore.instance
@@ -159,7 +164,7 @@ class _SignupScreenState extends State<SignupScreen>
     if (await signUp() && mounted) {
       // Sign out the auto-signed-in user so they arrive at login
       // with a clean auth state (createUserWithEmailAndPassword auto-signs in).
-      await FirebaseAuth.instance.signOut();
+      await _authService.signOut();
       if (mounted) {
         Navigator.pushReplacementNamed(context, 'login');
       }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/screens/category_services_screen.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 class CategoryItem extends StatelessWidget {
   final String id;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homemate/models/service.dart';
-import 'package:homemate/models/status_info.dart';
+import 'package:homemate/core/constants/status_info.dart';
 import 'package:homemate/services/service_service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة خدماتي – تعرض جميع خدمات مزوّد الخدمة الحالي.
 /// Provider Services Screen – lists all services owned by the current provider.

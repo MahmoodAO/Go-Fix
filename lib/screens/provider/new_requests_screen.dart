@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homemate/models/booking.dart';
 import 'package:homemate/services/booking_service.dart';
 import 'package:homemate/widgets/provider_booking_card.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة الطلبات الجديدة – تعرض فقط الحجوزات بحالة "pending".
 /// New Requests Screen – shows ONLY pending bookings for the current provider.

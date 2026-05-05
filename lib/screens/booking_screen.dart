@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homemate/models/service.dart';
 import 'package:homemate/models/booking.dart';
 import 'package:homemate/services/booking_service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة الحجز – تتيح للمستخدم اختيار التاريخ والوقت وإدخال العنوان وملاحظات.
 /// BookingScreen – allows the user to pick date/time, enter address & notes,

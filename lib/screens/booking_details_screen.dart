@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/models/booking.dart';
-import 'package:homemate/models/status_info.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/constants/status_info.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة تفاصيل الحجز – تعرض كل معلومات حجز واحد.
 /// BookingDetailsScreen – shows full details of a single booking.

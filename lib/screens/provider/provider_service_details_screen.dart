@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/models/service.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/services/service_service.dart';
 import 'package:homemate/widgets/star_rating.dart';
 
 import 'package:homemate/screens/add_service.dart';
-import 'package:homemate/models/status_info.dart';
+import 'package:homemate/core/constants/status_info.dart';
 
 class ProviderServiceDetailsScreen extends StatefulWidget {
   static const screenRoute = '/provider-service-details';

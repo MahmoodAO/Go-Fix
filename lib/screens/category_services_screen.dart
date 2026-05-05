@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:homemate/screens/services_item.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/widgets/services_item.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import '../models/service.dart';
 import '../services/favorites_services.dart';
 import '../services/service_service.dart';

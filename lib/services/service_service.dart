@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:homemate/models/service.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/utils/price_utils.dart';
 
 class ResolvedProviderIdentity {
   final String uid;

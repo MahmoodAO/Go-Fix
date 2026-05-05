@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:homemate/theme/app_theme.dart';
-import 'package:homemate/widgets/loading_overlay.dart';
-import 'package:homemate/services/local_storage_service.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/core/widgets/loading_overlay.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
+import 'package:homemate/services/auth_service.dart';
 import 'package:homemate/services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   bool _isSuccessLoading = false;
@@ -59,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen>
         debugPrint('[LOGIN] Attempting sign in: ${_emailController.text.trim()}');
       }
 
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await _authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -179,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
     }
 
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      await _authService.sendPasswordResetEmail(email: email);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -5,9 +5,9 @@ import 'package:homemate/screens/provider/provider_services_screen.dart';
 import 'package:homemate/screens/provider/provider_bookings_screen.dart';
 import 'package:homemate/screens/setting.dart';
 import 'package:homemate/screens/profile_info_screen.dart';
-import 'package:homemate/theme/app_theme.dart';
+import 'package:homemate/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
-import 'package:homemate/providers/theme_provider.dart';
+import 'package:homemate/core/theme/theme_provider.dart';
 
 /// شاشة التبويب الرئيسية لمزوّد الخدمة.
 /// Provider Tab Screen – main navigation shell for the provider role.

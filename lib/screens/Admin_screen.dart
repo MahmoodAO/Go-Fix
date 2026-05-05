@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:homemate/theme/app_theme.dart';
-import 'package:homemate/services/local_storage_service.dart';
-import 'package:homemate/utils/price_utils.dart';
+import 'package:homemate/core/theme/app_theme.dart';
+import 'package:homemate/core/utils/local_storage_service.dart';
+import 'package:homemate/core/utils/price_utils.dart';
+import 'package:homemate/services/auth_service.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -14,6 +14,8 @@ class AdminScreen extends StatefulWidget {
 }
 
 class _AdminScreenState extends State<AdminScreen> {
+  final AuthService _authService = AuthService();
+
   Future<void> _updateServiceStatus(String serviceId, String status) async {
     try {
       final docRef =
@@ -63,7 +65,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Future<void> _logout() async {
-    await FirebaseAuth.instance.signOut();
+    await _authService.signOut();
     await LocalStorageService.setLoggedIn(false);
     await LocalStorageService.setUserRole('customer');
     if (mounted) Navigator.pushReplacementNamed(context, 'login');
