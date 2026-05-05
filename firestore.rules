@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ─────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isProvider() {
+      return isAuthenticated() && getUserRole() == 'provider';
+    }
+
+    // ── Users collection ─────────────────────────────────────
+    match /users/{userId} {
+      // Users can read their own profile; admins can read any
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can create their own profile during signup
+      allow create: if isOwner(userId);
+      // Users can update their own profile; cannot change role
+      allow update: if isOwner(userId)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+      // Only admins can delete users or change roles
+      allow delete: if isAdmin();
+    }
+
+    // ── Services collection ──────────────────────────────────
+    match /services/{serviceId} {
+      // Anyone authenticated can read accepted services
+      // Providers can read their own services (any status)
+      // Admins can read all
+      allow read: if isAuthenticated()
+                  && (resource.data.approvalStatus == 'accepted'
+                      || resource.data.providerId == request.auth.uid
+                      || isAdmin());
+
+      // Providers can create new services
+      allow create: if isProvider()
+                    && request.resource.data.providerId == request.auth.uid
+                    && request.resource.data.approvalStatus == 'pending';
+
+      // Providers can update their own service fields (but not approvalStatus)
+      // Admins can update approvalStatus
+      allow update: if (isProvider()
+                      && resource.data.providerId == request.auth.uid
+                      && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['approvalStatus']))
+                    || isAdmin();
+
+      // Providers can delete their own services; admins can delete any
+      allow delete: if (isProvider() && resource.data.providerId == request.auth.uid)
+                    || isAdmin();
+
+      // ── Ratings subcollection ──────────────────────────────
+      match /ratings/{ratingId} {
+        allow read: if isAuthenticated();
+        // Users can rate (create/update) using their own userId
+        allow write: if isAuthenticated() && ratingId == request.auth.uid;
+      }
+    }
+
+    // ── Bookings collection ──────────────────────────────────
+    match /bookings/{bookingId} {
+      // Customers can read their own bookings
+      // Providers can read bookings for their services
+      // Admins can read all
+      allow read: if isAuthenticated()
+                  && (resource.data.userId == request.auth.uid
+                      || resource.data.providerId == request.auth.uid
+                      || isAdmin());
+
+      // Customers can create bookings
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Providers can update booking status for their bookings
+      // Customers can cancel their own bookings
+      allow update: if isAuthenticated()
+                    && (resource.data.providerId == request.auth.uid
+                        || resource.data.userId == request.auth.uid);
+
+      allow delete: if isAdmin();
+    }
+
+    // ── Categories collection ────────────────────────────────
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ── User favorites subcollection ─────────────────────────
+    match /users/{userId}/favorites/{favId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── Default deny ─────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
