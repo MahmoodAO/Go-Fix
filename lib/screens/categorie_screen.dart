@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homemate/core/widgets/services_item.dart';
 import 'package:homemate/services/favorites_services.dart';
 import 'package:homemate/core/utils/price_utils.dart';
+import 'package:homemate/services/user_service.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -20,6 +21,7 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   late Future<List<Category>> _categoriesFuture;
+  final UserService _userService = UserService();
   String _userName = '';
   String _userRole = 'customer'; // دور المستخدم الحالي
 
@@ -47,17 +49,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
     // 2. Try fetching from Firestore users collection
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      if (doc.exists) {
-        final data = doc.data()!;
-        final name = data['displayName'] as String?;
-        if (name != null && name.isNotEmpty) {
-          if (mounted) setState(() => _userName = name);
-          return;
-        }
+      final name = await _userService.getUserDisplayName(user.uid);
+      if (name.isNotEmpty) {
+        if (mounted) setState(() => _userName = name);
+        return;
       }
     } catch (_) {}
 

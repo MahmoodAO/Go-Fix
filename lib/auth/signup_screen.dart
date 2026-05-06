@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/services/auth_service.dart';
+import 'package:homemate/services/user_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -23,6 +23,7 @@ class _SignupScreenState extends State<SignupScreen>
   bool _obscureConfirm = true;
   bool _agreedToTerms = false;
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
   String _selectedRole = 'customer'; // الدور المختار: customer أو provider
 
   late AnimationController _animController;
@@ -76,15 +77,12 @@ class _SignupScreenState extends State<SignupScreen>
             );
 
             // Save user profile data to Firestore (including role)
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .set({
-              'displayName': _nameController.text.trim(),
-              'email': _emailController.text.trim(),
-              'role': _selectedRole,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
+            await _userService.createUserProfile(
+              uid: user.uid,
+              displayName: _nameController.text.trim(),
+              email: _emailController.text.trim(),
+              role: _selectedRole,
+            );
           } catch (firestoreError) {
             // Rollback: delete the orphaned Auth user
             await user.delete();

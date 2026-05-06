@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/services/auth_service.dart';
+import 'package:homemate/services/user_service.dart';
 
 class ProfileInfoScreen extends StatefulWidget {
   const ProfileInfoScreen({super.key});
@@ -17,6 +17,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   bool _isLoading = false;
   bool _isInitialLoading = true;
@@ -46,13 +47,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
 
     // Try to load extended profile from Firestore
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      final data = await _userService.getCurrentUserProfile();
 
-      if (doc.exists) {
-        final data = doc.data()!;
+      if (data != null) {
         if (data.containsKey('displayName') &&
             _nameController.text.isEmpty) {
           _nameController.text = data['displayName'] ?? '';
@@ -89,16 +86,12 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       );
 
       // Save extended profile to Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set({
-        'displayName': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'email': _email,
-        'photoUrl': _photoUrl,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _userService.updateCurrentUserProfile(
+        displayName: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        email: _email,
+        photoUrl: _photoUrl,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
