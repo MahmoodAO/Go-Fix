@@ -7,6 +7,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة خدماتي – تعرض جميع خدمات مزوّد الخدمة الحالي.
 /// Provider Services Screen – lists all services owned by the current provider.
+/// شاشة خدمات المزود، وتعرض خدماته المقبولة أو المعلقة بحسب وضع الشاشة.
 class ProviderServicesScreen extends StatefulWidget {
   final bool showPendingOnly;
 
@@ -20,9 +21,11 @@ class ProviderServicesScreen extends StatefulWidget {
 }
 
 class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
+  /// بث مباشر لخدمات مزود الخدمة الحالي.
   late Stream<List<Service>> _servicesStream;
 
   @override
+  /// تهيئة بث الخدمات الخاصة بالمزود الحالي.
   void initState() {
     super.initState();
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -30,6 +33,7 @@ class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
   }
 
   @override
+  /// بناء شاشة الخدمات مع التصفية حسب حالة الموافقة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
@@ -56,6 +60,7 @@ class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
               ),
             )
           : null,
+      // الاستماع المباشر لخدمات المزود لتحديث القائمة تلقائيًا.
       body: StreamBuilder<List<Service>>(
         stream: _servicesStream,
         builder: (context, snapshot) {
@@ -72,6 +77,7 @@ class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
 
           final allServices = snapshot.data ?? [];
           
+          // تحديد الخدمات التي ستظهر بناءً على حالة الاعتماد المطلوبة.
           final services = allServices.where((s) {
             final st = s.approvalStatus;
             if (widget.showPendingOnly) {
@@ -137,6 +143,7 @@ class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
     );
   }
 
+  /// بناء واجهة بديلة عند عدم وجود خدمات قابلة للعرض.
   Widget _buildEmptyState(bool isDark, IconData icon, String message) {
     return Center(
       child: Column(
@@ -171,6 +178,7 @@ class _ProviderServicesScreenState extends State<ProviderServicesScreen> {
 // ───────────────────────────────────────────────────────────────────
 // Service Card for Provider — tappable
 // ───────────────────────────────────────────────────────────────────
+/// بطاقة خدمة داخل قائمة مزود الخدمة تعرض الحالة والبيانات الأساسية.
 class _ServiceCard extends StatelessWidget {
   final Service service;
   final bool isDark;
@@ -183,6 +191,7 @@ class _ServiceCard extends StatelessWidget {
   });
 
   @override
+  /// بناء بطاقة الخدمة مع دعم الانتقال إلى شاشة التفاصيل.
   Widget build(BuildContext context) {
     final surfaceColor = AppTheme.getSurface(isDark);
     final textPrimary = AppTheme.getTextPrimary(isDark);
@@ -303,6 +312,7 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 
+  /// تحويل حالة الاعتماد إلى بيانات عرض موحدة.
   StatusInfo _getStatusInfo(String status) {
     return StatusInfo.fromApprovalStatus(status);
   }

@@ -7,6 +7,7 @@ import 'package:homemate/widgets/star_rating.dart';
 import 'package:homemate/screens/add_service.dart';
 import 'package:homemate/core/constants/status_info.dart';
 
+/// شاشة تفاصيل خدمة المزود، وتعرض حالتها مع إمكانيات التعديل أو الحذف.
 class ProviderServiceDetailsScreen extends StatefulWidget {
   static const screenRoute = '/provider-service-details';
 
@@ -19,17 +20,21 @@ class ProviderServiceDetailsScreen extends StatefulWidget {
 
 class _ProviderServiceDetailsScreenState
     extends State<ProviderServiceDetailsScreen> {
+  /// معرّف الخدمة والبيانات المحملة الخاصة بها.
   late String _serviceId;
   Service? _service;
+  /// حالات التحميل والحذف وتهيئة الشاشة لأول مرة.
   bool _isLoading = true;
   bool _isDeleting = false;
   bool _isInit = false;
 
   @override
+  /// قراءة معرّف الخدمة من المسار ثم تحميل البيانات مرة واحدة فقط.
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
       _isInit = true;
+      // استقبال معرّف الخدمة المرسل من قائمة خدمات المزود.
       final routeArgs =
           ModalRoute.of(context)?.settings.arguments as Map?;
       if (routeArgs != null && routeArgs.containsKey('id')) {
@@ -41,6 +46,7 @@ class _ProviderServiceDetailsScreenState
     }
   }
 
+  /// جلب تفاصيل الخدمة من Firestore وتحديث الواجهة.
   Future<void> _loadServiceDetails() async {
     try {
       final service = await ServiceService().getServiceById(_serviceId);
@@ -58,6 +64,7 @@ class _ProviderServiceDetailsScreenState
   }
 
   @override
+  /// بناء شاشة التفاصيل مع حالات التحميل والخدمة غير الموجودة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = AppTheme.getScaffoldBg(isDark);
@@ -65,6 +72,7 @@ class _ProviderServiceDetailsScreenState
     final textSecondary = AppTheme.getTextSecondary(isDark);
     final dividerColor = AppTheme.getDividerColor(isDark);
 
+    // عرض مؤشر تحميل حتى تكتمل قراءة بيانات الخدمة.
     if (_isLoading) {
       return Scaffold(
         backgroundColor: scaffoldBg,
@@ -79,6 +87,7 @@ class _ProviderServiceDetailsScreenState
       );
     }
 
+    // عرض رسالة بديلة إذا تعذر العثور على الخدمة.
     if (_service == null) {
       return Scaffold(
         backgroundColor: scaffoldBg,
@@ -260,6 +269,7 @@ class _ProviderServiceDetailsScreenState
     );
   }
 
+  /// بناء بطاقة معلومات مختصرة مثل الموقع ورقم الهاتف.
   Widget _buildInfoCard({
     required IconData icon,
     required String title,
@@ -323,6 +333,7 @@ class _ProviderServiceDetailsScreenState
     );
   }
 
+  /// بناء أزرار التعديل والحذف الخاصة بمزود الخدمة.
   Widget _buildActionButtons(bool isDark) {
     return Column(
       children: [
@@ -332,6 +343,7 @@ class _ProviderServiceDetailsScreenState
           height: 56,
           child: OutlinedButton.icon(
             onPressed: () async {
+              // فتح شاشة التعديل ثم إعادة تحميل البيانات بعد الحفظ.
               final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => AddService(serviceToEdit: _service),
@@ -391,6 +403,7 @@ class _ProviderServiceDetailsScreenState
     );
   }
 
+  /// عرض نافذة تأكيد الحذف ثم تنفيذ الحذف الآمن للخدمة عند الموافقة.
   Future<void> _showDeleteDialog() async {
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -424,6 +437,7 @@ class _ProviderServiceDetailsScreenState
     if (confirm == true && mounted) {
       try {
         setState(() => _isDeleting = true);
+        // حذف الخدمة مع تنظيف البيانات المرتبطة بها في Firestore.
         await ServiceService().deleteService(_serviceId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -442,6 +456,7 @@ class _ProviderServiceDetailsScreenState
     }
   }
 
+  /// تحويل حالة الاعتماد إلى بيانات عرض تفصيلية للمزوّد.
   StatusInfo _getStatusInfo(String status) {
     return StatusInfo.fromApprovalStatusDetailed(status);
   }

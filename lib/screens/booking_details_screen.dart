@@ -5,18 +5,22 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة تفاصيل الحجز – تعرض كل معلومات حجز واحد.
 /// BookingDetailsScreen – shows full details of a single booking.
+/// شاشة تفاصيل الحجز، وتعرض جميع معلومات الحجز المختار بشكل منظم.
 class BookingDetailsScreen extends StatelessWidget {
   static const screenRoute = '/booking-details';
 
   const BookingDetailsScreen({super.key});
 
   @override
+  /// بناء شاشة التفاصيل بعد قراءة الحجز المرسل عبر المسار.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // استلام كائن الحجز المرسل من الشاشة السابقة عبر المسار.
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final booking = args?['booking'] as Booking?;
 
+    // عرض حالة بديلة إذا لم تصل بيانات الحجز بشكل صحيح.
     if (booking == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('تفاصيل الحجز')),
@@ -243,6 +247,7 @@ class BookingDetailsScreen extends StatelessWidget {
   }
 
   // ─── Helper Widgets ───────────────────────────────────────────
+  /// بناء صف معلومات موحد لعرض أي قيمة ضمن تفاصيل الحجز.
   Widget _buildDetailRow({
     required IconData icon,
     required String label,
@@ -291,6 +296,7 @@ class BookingDetailsScreen extends StatelessWidget {
     );
   }
 
+  /// بناء فاصل بصري بين عناصر التفاصيل.
   Widget _buildDivider(Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -298,10 +304,12 @@ class BookingDetailsScreen extends StatelessWidget {
     );
   }
 
+  /// تنسيق التاريخ والوقت بشكل نصي مناسب للعرض.
   String _formatDateTime(DateTime dt) {
     return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
+  /// تحويل حالة الحجز إلى بيانات عرض موحدة من حيث النص واللون والأيقونة.
   StatusInfo _getStatusInfo(String status) {
     return StatusInfo.fromBookingStatus(status);
   }

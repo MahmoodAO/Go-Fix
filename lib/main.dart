@@ -31,8 +31,10 @@ import 'package:provider/provider.dart';
 import 'package:homemate/core/theme/theme_provider.dart';
 import 'package:homemate/services/user_service.dart';
 
+/// نقطة تشغيل التطبيق وتهيئة Firebase ومزود الثيم قبل بناء الواجهة.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // تهيئة خدمات Firebase قبل تشغيل التطبيق.
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -48,6 +50,7 @@ void main() async {
   );
 }
 
+/// الجذر الرئيسي للتطبيق، ويضبط الثيم والمسارات وشاشة البداية.
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -56,9 +59,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  /// حالات الفلاتر المستخدمة في شاشة التصنيفات والخدمات.
   Map<String, bool> filters = {'Irbid': false, 'Amman': false, 'Aqaba': false};
 
   @override
+  /// الاستماع لتغييرات جلسة المصادقة لأغراض المتابعة أثناء التطوير.
   void initState() {
     super.initState();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -68,6 +73,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  /// تحديث قيم الفلاتر المشتركة بين الشاشات المرتبطة بالخدمات.
   void changeFilters(Map<String, bool> filterData) {
     setState(() {
       filters = filterData;
@@ -75,6 +81,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  /// بناء التطبيق بالكامل مع تفعيل الثيم والمسارات المسمّاة.
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     
@@ -89,6 +96,7 @@ class _MyAppState extends State<MyApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
+      // شاشة البداية تحدد المسار المناسب حسب التخزين المحلي وحالة المستخدم.
       home: const AuthWrapperScreen(),
       routes: {
         'welcome': (context) => const WelcomScreen(),
@@ -123,6 +131,7 @@ class _MyAppState extends State<MyApp> {
 
 /// Guard widget for the /admin route.
 /// Verifies the current user is authenticated AND has role == 'admin'.
+/// حارس مسار الإدارة للتحقق من الصلاحية قبل فتح لوحة التحكم.
 class _AdminGuard extends StatefulWidget {
   @override
   State<_AdminGuard> createState() => _AdminGuardState();
@@ -130,11 +139,13 @@ class _AdminGuard extends StatefulWidget {
 
 class _AdminGuardState extends State<_AdminGuard> {
   @override
+  /// بدء التحقق من دور المستخدم مباشرة بعد فتح الحارس.
   void initState() {
     super.initState();
     _verifyAdmin();
   }
 
+  /// التحقق من أن المستخدم الحالي يملك دور الإدارة قبل السماح بالدخول.
   Future<void> _verifyAdmin() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -143,11 +154,13 @@ class _AdminGuardState extends State<_AdminGuard> {
     }
 
     try {
+      // قراءة دور المستخدم من Firestore لتحديد صلاحية الوصول.
       final role = await UserService().getUserRole(user.uid);
       if (!mounted) return;
 
       if (role == 'admin') {
         // Verified — replace this guard with the real admin screen
+        // توجيه المستخدم إلى شاشة الإدارة الفعلية بعد نجاح التحقق.
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => AdminScreen()),
         );
@@ -165,6 +178,7 @@ class _AdminGuardState extends State<_AdminGuard> {
   }
 
   @override
+  /// عرض حالة تحميل مؤقتة أثناء فحص صلاحيات الإدارة.
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(child: CircularProgressIndicator()),

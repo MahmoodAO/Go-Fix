@@ -4,6 +4,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// Splash/auth decision screen shown at app startup.
 /// Checks local storage to decide whether to show the main app or welcome/login.
+/// شاشة تمهيدية تفحص التخزين المحلي لتحديد أول شاشة تظهر للمستخدم.
 class AuthWrapperScreen extends StatefulWidget {
   const AuthWrapperScreen({super.key});
 
@@ -13,16 +14,19 @@ class AuthWrapperScreen extends StatefulWidget {
 
 class _AuthWrapperScreenState extends State<AuthWrapperScreen> {
   @override
+  /// بدء فحص حالة الدخول فور تشغيل الشاشة.
   void initState() {
     super.initState();
     _checkLoginStatus();
   }
 
+  /// قراءة حالة تسجيل الدخول والإعدادات المحلية لتحديد مسار البداية المناسب.
   Future<void> _checkLoginStatus() async {
     final loggedIn = await LocalStorageService.isLoggedIn();
 
     if (!mounted) return;
 
+    // عند وجود جلسة محلية يتم التوجيه حسب الدور المحفوظ مسبقًا.
     if (loggedIn) {
       // Route based on locally stored role
       final role = await LocalStorageService.getUserRole();
@@ -37,6 +41,7 @@ class _AuthWrapperScreenState extends State<AuthWrapperScreen> {
       }
       Navigator.of(context).pushReplacementNamed(destination);
     } else {
+      // عند عدم وجود جلسة يتم التحقق من شاشة الترحيب ثم التوجيه لتسجيل الدخول.
       final onboardingCompleted = await LocalStorageService.isOnboardingCompleted();
       if (!mounted) return;
       if (onboardingCompleted) {
@@ -48,6 +53,7 @@ class _AuthWrapperScreenState extends State<AuthWrapperScreen> {
   }
 
   @override
+  /// عرض شاشة انتظار بسيطة أثناء حسم وجهة البداية.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

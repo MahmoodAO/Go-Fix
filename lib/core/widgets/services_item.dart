@@ -4,7 +4,9 @@ import 'package:homemate/core/theme/theme_provider.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
+/// بطاقة خدمة مختصرة، وتعرض بيانات الخدمة الأساسية مع زر المفضلة والتنقل للتفاصيل.
 class ServicesItem extends StatelessWidget {
+  /// البيانات الأساسية المستخدمة في عرض الخدمة داخل القوائم.
   final String id;
   final String title;
   final String phone;
@@ -33,6 +35,7 @@ class ServicesItem extends StatelessWidget {
   });
 
   @override
+  /// بناء بطاقة الخدمة مع السعر والتقييم والموقع وإجراءات التنقل.
   Widget build(BuildContext context) {
     final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
     final titleColor =
@@ -63,6 +66,7 @@ class ServicesItem extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: () {
+            // فتح شاشة تفاصيل الخدمة عند الضغط على البطاقة.
             Navigator.of(context).pushNamed(
               '/service-details',
               arguments: {'id': id},
@@ -175,6 +179,7 @@ class ServicesItem extends StatelessWidget {
                   spacing: 10,
                   runSpacing: 10,
                   children: [
+                    // عرض معلومات مختصرة عن التقييم والسعر الابتدائي.
                     _InfoChip(
                       icon: Icons.star_rounded,
                       label: '${averageRating.toStringAsFixed(1)} ($totalRatings)',
@@ -255,6 +260,7 @@ class ServicesItem extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // الانتقال المباشر إلى شاشة تفاصيل الخدمة قبل متابعة الحجز.
                       Navigator.of(context).pushNamed(
                         '/service-details',
                         arguments: {'id': id},
@@ -286,6 +292,7 @@ class ServicesItem extends StatelessWidget {
   }
 }
 
+/// عنصر بصري صغير لعرض معلومة سريعة مثل السعر أو التقييم.
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -302,6 +309,7 @@ class _InfoChip extends StatelessWidget {
   });
 
   @override
+  /// بناء شارة معلومات موحدة الشكل.
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(

@@ -4,6 +4,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/services/auth_service.dart';
 import 'package:homemate/services/user_service.dart';
 
+/// شاشة إنشاء الحساب، وتدير تسجيل المستخدم وحفظ بياناته الأساسية ودوره.
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -13,24 +14,29 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen>
     with SingleTickerProviderStateMixin {
+  /// متحكمات حقول الاسم والبريد وكلمة المرور.
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  /// متغيرات التحكم في التحميل وإظهار كلمات المرور والموافقة على الشروط.
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _agreedToTerms = false;
+  /// خدمات المصادقة والمستخدم المستخدمة في إنشاء الحساب والملف الشخصي.
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
   String _selectedRole = 'customer'; // الدور المختار: customer أو provider
 
+  /// متحكمات الحركة الخاصة بظهور عناصر الشاشة.
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
   @override
+  /// تهيئة الحركات الافتتاحية عند فتح شاشة إنشاء الحساب.
   void initState() {
     super.initState();
 
@@ -57,9 +63,11 @@ class _SignupScreenState extends State<SignupScreen>
     _animController.forward();
   }
 
+  /// تنفيذ عملية إنشاء الحساب عبر Firebase Auth ثم إنشاء الملف الشخصي في Firestore.
   Future<bool> signUp() async {
     try {
       if (passwordConfirmed() && _fieldsAreValid()) {
+        // إنشاء حساب المستخدم في Firebase Authentication.
         // Create the user with Firebase Auth
         final credential =
             await _authService.createUserWithEmailAndPassword(
@@ -70,12 +78,14 @@ class _SignupScreenState extends State<SignupScreen>
         final user = credential.user;
         if (user != null) {
           try {
+            // حفظ اسم العرض داخل ملف المستخدم في Firebase Auth.
             // Save displayName to Firebase Auth profile
             await _authService.updateDisplayName(
               user: user,
               displayName: _nameController.text.trim(),
             );
 
+            // إنشاء ملف المستخدم في Firestore مع حفظ الدور المختار.
             // Save user profile data to Firestore (including role)
             await _userService.createUserProfile(
               uid: user.uid,
@@ -84,6 +94,7 @@ class _SignupScreenState extends State<SignupScreen>
               role: _selectedRole,
             );
           } catch (firestoreError) {
+            // في حال فشل إنشاء الملف الشخصي يتم حذف حساب Auth لتجنب بيانات غير مكتملة.
             // Rollback: delete the orphaned Auth user
             await user.delete();
             if (mounted) {
@@ -135,11 +146,13 @@ class _SignupScreenState extends State<SignupScreen>
     }
   }
 
+  /// التحقق من تطابق كلمة المرور مع حقل التأكيد.
   bool passwordConfirmed() {
     return _passwordController.text.trim() ==
         _confirmPasswordController.text.trim();
   }
 
+  /// التحقق من تعبئة جميع الحقول الأساسية المطلوبة للتسجيل.
   bool _fieldsAreValid() {
     return _nameController.text.trim().isNotEmpty &&
         _emailController.text.trim().isNotEmpty &&
@@ -147,7 +160,9 @@ class _SignupScreenState extends State<SignupScreen>
         _confirmPasswordController.text.trim().isNotEmpty;
   }
 
+  /// معالجة زر إنشاء الحساب مع التحقق من الشروط ثم تنفيذ التسجيل.
   Future<void> _handleSignup() async {
+    // منع متابعة التسجيل قبل الموافقة على الشروط والأحكام.
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -160,6 +175,7 @@ class _SignupScreenState extends State<SignupScreen>
     setState(() => _isLoading = true);
 
     if (await signUp() && mounted) {
+      /// تسجيل الخروج مباشرة بعد الإنشاء حتى يصل المستخدم إلى شاشة الدخول بحالة نظيفة.
       // Sign out the auto-signed-in user so they arrive at login
       // with a clean auth state (createUserWithEmailAndPassword auto-signs in).
       await _authService.signOut();
@@ -174,6 +190,7 @@ class _SignupScreenState extends State<SignupScreen>
   }
 
   @override
+  /// التخلص من المتحكمات عند إغلاق الشاشة.
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -184,6 +201,7 @@ class _SignupScreenState extends State<SignupScreen>
   }
 
   @override
+  /// بناء واجهة إنشاء الحساب مع اختيار الدور والتحقق من الشروط.
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final topHeight = mq.size.height * 0.28;

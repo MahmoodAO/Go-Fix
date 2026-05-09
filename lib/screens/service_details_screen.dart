@@ -7,6 +7,7 @@ import 'package:homemate/widgets/star_rating.dart';
 import 'package:homemate/screens/booking_screen.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
+/// شاشة تفاصيل الخدمة، وتعرض المعلومات الكاملة مع المفضلة والتقييم وإمكانية الحجز.
 class ServiceDetailsScreen extends StatefulWidget {
   static const screenRoute = '/service-details';
 
@@ -17,17 +18,22 @@ class ServiceDetailsScreen extends StatefulWidget {
 }
 
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
+  /// خدمة المفضلة المستخدمة لإضافة الخدمة أو إزالتها للمستخدم الحالي.
   final FavoritesService _favoritesService = FavoritesService();
+  /// معرّف الخدمة المطلوب عرضها والبيانات المحملة الخاصة بها.
   late String _serviceId;
   Service? _service;
+  /// حالات التحميل وتهيئة الشاشة لأول مرة.
   bool _isLoading = true;
   bool _isInit = false;
 
   @override
+  /// قراءة معرّف الخدمة من المسار ثم تحميل التفاصيل مرة واحدة فقط.
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
       _isInit = true;
+      // استقبال معرّف الخدمة المرسل من الشاشة السابقة.
       final routeArgs =
           ModalRoute.of(context)?.settings.arguments as Map?;
       if (routeArgs != null && routeArgs.containsKey('id')) {
@@ -39,6 +45,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     }
   }
 
+  /// جلب تفاصيل الخدمة من Firestore وإظهارها في الواجهة.
   Future<void> _loadServiceDetails() async {
     try {
       final service = await ServiceService().getServiceById(_serviceId);
@@ -53,6 +60,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     }
   }
 
+  /// تبديل حالة المفضلة الحالية للخدمة للمستخدم الحالي.
   void _toggleFavorite(bool isFav) async {
     if (isFav) {
       await _favoritesService.removeFromFavorites(_serviceId);
@@ -62,6 +70,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   }
 
   @override
+  /// بناء شاشة التفاصيل مع حالات التحميل والخدمة غير الموجودة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = AppTheme.getScaffoldBg(isDark);
@@ -70,6 +79,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     final textSecondary = AppTheme.getTextSecondary(isDark);
     final dividerColor = AppTheme.getDividerColor(isDark);
 
+    // عرض مؤشر تحميل أثناء جلب بيانات الخدمة من Firestore.
     if (_isLoading) {
       return Scaffold(
         backgroundColor: scaffoldBg,
@@ -89,6 +99,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       );
     }
 
+    // عرض رسالة بديلة إذا تعذر العثور على الخدمة أو فشل تحميلها.
     if (_service == null) {
       return Scaffold(
         backgroundColor: scaffoldBg,
@@ -122,6 +133,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ),
         ),
         actions: [
+          // الاستماع المباشر للمفضلة لإظهار الزر بالحالة الصحيحة دائمًا.
           StreamBuilder<List<String>>(
             stream: _favoritesService.getFavoriteServiceIdsStream(),
             builder: (context, snapshot) {
@@ -307,6 +319,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     height: 56,
                     child: ElevatedButton.icon(
                       onPressed: () {
+                        // الانتقال إلى شاشة الحجز مع تمرير الخدمة المختارة.
                         Navigator.of(context).pushNamed(
                           BookingScreen.screenRoute,
                           arguments: {
@@ -388,6 +401,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     );
   }
 
+  /// بناء صف موحد لعرض بيانات التواصل مثل الهاتف والموقع.
   Widget _buildContactRow({
     required BuildContext context,
     required IconData icon,

@@ -9,15 +9,18 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة حجوزاتي – تعرض جميع حجوزات المستخدم الحالي من Firestore.
 /// MyBookingsScreen – shows all bookings for the current user in real-time.
+/// شاشة حجوزاتي، وتعرض جميع حجوزات المستخدم الحالي بشكل مباشر من Firestore.
 class MyBookingsScreen extends StatelessWidget {
   const MyBookingsScreen({super.key});
 
   @override
+  /// بناء شاشة الحجوزات مع الاستماع المباشر لحالة البيانات.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = FirebaseAuth.instance.currentUser;
 
     // إذا المستخدم غير مسجل دخول
+    // لا يمكن عرض الحجوزات إذا لم يكن هناك مستخدم مسجل دخول.
     if (user == null) {
       return _buildEmptyState(
         isDark: isDark,
@@ -28,6 +31,7 @@ class MyBookingsScreen extends StatelessWidget {
 
     final bookingService = BookingService();
 
+    // استخدام StreamBuilder لعرض الحجوزات وتحديثها فور أي تغيير.
     return StreamBuilder<List<Booking>>(
       stream: bookingService.getUserBookingsStream(user.uid),
       builder: (context, snapshot) {
@@ -86,6 +90,7 @@ class MyBookingsScreen extends StatelessWidget {
     );
   }
 
+  /// بناء واجهة فارغة أو بديلة عند عدم وجود بيانات أو عند حدوث مشكلة.
   Widget _buildEmptyState({
     required bool isDark,
     required IconData icon,
@@ -128,6 +133,7 @@ class MyBookingsScreen extends StatelessWidget {
 // ───────────────────────────────────────────────────────────────────
 // Booking Card Widget
 // ───────────────────────────────────────────────────────────────────
+/// بطاقة عرض مختصرة لحجز واحد داخل قائمة حجوزات المستخدم.
 class _BookingCard extends StatelessWidget {
   final Booking booking;
   final bool isDark;
@@ -135,6 +141,7 @@ class _BookingCard extends StatelessWidget {
   const _BookingCard({required this.booking, required this.isDark});
 
   @override
+  /// بناء بطاقة الحجز مع الانتقال إلى شاشة التفاصيل عند الضغط عليها.
   Widget build(BuildContext context) {
     final surfaceColor = AppTheme.getSurface(isDark);
     final textPrimary = AppTheme.getTextPrimary(isDark);
@@ -144,6 +151,7 @@ class _BookingCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        // تمرير كائن الحجز بالكامل إلى شاشة التفاصيل.
         Navigator.of(context).pushNamed(
           BookingDetailsScreen.screenRoute,
           arguments: {'booking': booking},
@@ -248,6 +256,7 @@ class _BookingCard extends StatelessWidget {
     );
   }
 
+  /// بناء عنصر صغير لعرض معلومة مختصرة مثل التاريخ أو الوقت أو العنوان.
   Widget _buildInfoChip({
     required IconData icon,
     required String text,
@@ -274,6 +283,7 @@ class _BookingCard extends StatelessWidget {
     );
   }
 
+  /// تحويل حالة الحجز إلى بيانات عرض موحدة.
   StatusInfo _getStatusInfo(String status) {
     return StatusInfo.fromBookingStatus(status);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
+/// شاشة الفلاتر، وتسمح للمستخدم بتحديد المدن المستخدمة في تصفية النتائج.
 class FiltersScreen extends StatefulWidget {
   static const screenRoute = '/filters';
 
@@ -13,11 +14,13 @@ class FiltersScreen extends StatefulWidget {
 }
 
 class FiltersScreenState extends State<FiltersScreen> {
+  /// الحالات المحلية للفلاتر المعروضة داخل الشاشة.
   var _irbid = false;
   var _amman = false;
   var _aqaba = false;
 
   @override
+  /// تهيئة قيم الفلاتر الحالية القادمة من الشاشة السابقة.
   initState() {
     _irbid = widget.currentFilters['Irbid'] ?? false;
     _amman = widget.currentFilters['Amman'] ?? false;
@@ -25,6 +28,7 @@ class FiltersScreenState extends State<FiltersScreen> {
     super.initState();
   }
 
+  /// بناء عنصر واجهة موحد لعرض كل فلتر مع زر التفعيل والإيقاف.
   Widget _buildFilterTile({
     required String title,
     required String subtitle,
@@ -93,6 +97,7 @@ class FiltersScreenState extends State<FiltersScreen> {
   }
 
   @override
+  /// بناء واجهة الفلاتر مع حفظ الاختيارات وإرجاعها للشاشة السابقة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
@@ -122,6 +127,7 @@ class FiltersScreenState extends State<FiltersScreen> {
             padding: const EdgeInsets.only(left: 8),
             child: TextButton.icon(
               onPressed: () {
+                // تجميع القيم الحالية ثم تمريرها إلى الدالة القادمة من الشاشة الأم.
                 final selectedFilters = {
                   'Irbid': _irbid,
                   'Amman': _amman,

@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+/// طبقة تحميل تغطي الشاشة أثناء العمليات التي تتطلب انتظارًا قصيرًا.
 class LoadingOverlay extends StatelessWidget {
   const LoadingOverlay({super.key});
 
   @override
+  /// بناء طبقة ضبابية مع مؤشر تحميل مخصص ورسالة انتظار.
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: BackdropFilter(
@@ -35,6 +37,7 @@ class LoadingOverlay extends StatelessWidget {
   }
 }
 
+/// مؤشر تحميل متحرك مرسوم يدويًا ليتماشى مع هوية التطبيق.
 class AnimatedHomeLoader extends StatefulWidget {
   const AnimatedHomeLoader({super.key});
 
@@ -44,9 +47,11 @@ class AnimatedHomeLoader extends StatefulWidget {
 
 class _AnimatedHomeLoaderState extends State<AnimatedHomeLoader>
     with SingleTickerProviderStateMixin {
+  /// متحكم الحركة الذي يعيد تشغيل الرسم بشكل دوري.
   late AnimationController _controller;
 
   @override
+  /// بدء الحركة المتكررة عند إنشاء مؤشر التحميل.
   void initState() {
     super.initState();
     // 2.5 seconds loop for a slow, elegant sweep back and forth.
@@ -57,12 +62,14 @@ class _AnimatedHomeLoaderState extends State<AnimatedHomeLoader>
   }
 
   @override
+  /// التخلص من متحكم الحركة عند إزالة المؤشر من الشجرة.
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
   @override
+  /// إعادة رسم المؤشر مع كل تحديث لقيمة الحركة.
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
@@ -76,12 +83,15 @@ class _AnimatedHomeLoaderState extends State<AnimatedHomeLoader>
   }
 }
 
+/// رسام مخصص يرسم منزلًا وأداة طلاء متحركة كمؤشر تحميل بصري.
 class HomeRepairPainter extends CustomPainter {
   final double animationValue;
 
+  /// تهيئة الرسام بقيمة الحركة الحالية للتحكم في موضع الأداة.
   HomeRepairPainter({required this.animationValue});
 
   @override
+  /// رسم الشكل المتحرك بناءً على قيمة الحركة الحالية.
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
@@ -91,6 +101,7 @@ class HomeRepairPainter extends CustomPainter {
     // Sweeps from left (0.05 w) to right (0.95 w) and back.
     final rollerX = w * 0.5 - math.cos(cycle) * (w * 0.45);
 
+    /// رسم المنزل بنسخته الشفافة أو الملونة بحسب جزء الحركة الحالي.
     void drawHouse(Canvas c, bool isColored) {
       final paint = Paint()
         ..style = isColored ? PaintingStyle.fill : PaintingStyle.stroke
@@ -187,6 +198,7 @@ class HomeRepairPainter extends CustomPainter {
   }
 
   @override
+  /// إعادة الرسم فقط عند تغير قيمة الحركة.
   bool shouldRepaint(HomeRepairPainter oldDelegate) {
     return oldDelegate.animationValue != animationValue;
   }

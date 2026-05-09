@@ -11,6 +11,7 @@ import 'package:homemate/core/theme/theme_provider.dart';
 
 /// شاشة التبويب الرئيسية لمزوّد الخدمة.
 /// Provider Tab Screen – main navigation shell for the provider role.
+/// الشاشة الرئيسية لمزود الخدمة، وتدير التنقل بين لوحة التحكم والخدمات والطلبات.
 class ProviderTabsScreen extends StatefulWidget {
   const ProviderTabsScreen({super.key});
 
@@ -19,15 +20,18 @@ class ProviderTabsScreen extends StatefulWidget {
 }
 
 class _ProviderTabsScreenState extends State<ProviderTabsScreen> {
+  /// مؤشر التبويب النشط حاليًا داخل واجهة المزود.
   int _selectedIndex = 0;
 
   final List<String> _titles = ['الرئيسية', 'خدماتي', 'الطلبات', 'الإعدادات'];
 
+  /// تحديث التبويب الحالي عند اختيار عنصر من شريط التنقل.
   void _selectScreen(int index) {
     setState(() => _selectedIndex = index);
   }
 
   @override
+  /// بناء واجهة التبويبات الخاصة بالمزود.
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
@@ -35,6 +39,7 @@ class _ProviderTabsScreenState extends State<ProviderTabsScreen> {
     final user = FirebaseAuth.instance.currentUser;
     final userName = user?.displayName ?? user?.email?.split('@').first ?? '';
 
+    // إنشاء قائمة الشاشات هنا حتى تتمكن لوحة التحكم من تغيير التبويب برمجيًا.
     // Build screens list here so the dashboard gets the callback
     final screens = <Widget>[
       ProviderDashboardScreen(onSwitchTab: _selectScreen),
@@ -66,6 +71,7 @@ class _ProviderTabsScreenState extends State<ProviderTabsScreen> {
             padding: const EdgeInsets.only(left: 8, right: 8),
             child: GestureDetector(
               onTap: () {
+                // الانتقال إلى شاشة الملف الشخصي عند الضغط على صورة المزود.
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const ProfileInfoScreen(),
@@ -178,6 +184,7 @@ class _ProviderTabsScreenState extends State<ProviderTabsScreen> {
     );
   }
 
+  /// بناء عنصر تنقل سفلي موحد داخل واجهة المزود.
   Widget _buildNavItem({
     required IconData icon,
     required String label,

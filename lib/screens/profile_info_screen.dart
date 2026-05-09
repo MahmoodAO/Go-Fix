@@ -5,6 +5,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/services/auth_service.dart';
 import 'package:homemate/services/user_service.dart';
 
+/// شاشة الملف الشخصي، وتعرض بيانات المستخدم الحالية وتسمح بتحديثها.
 class ProfileInfoScreen extends StatefulWidget {
   const ProfileInfoScreen({super.key});
 
@@ -13,30 +14,36 @@ class ProfileInfoScreen extends StatefulWidget {
 }
 
 class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
+  /// مفتاح النموذج ومتحكمات الحقول القابلة للتعديل.
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  /// خدمات المصادقة والمستخدم لتحديث البيانات محليًا وفي Firestore.
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
 
+  /// حالات التحميل والبيانات الثابتة للملف الشخصي.
   bool _isLoading = false;
   bool _isInitialLoading = true;
   String _email = '';
   String _photoUrl = '';
 
   @override
+  /// بدء تحميل بيانات المستخدم الحالي عند فتح الشاشة.
   void initState() {
     super.initState();
     _loadUserData();
   }
 
   @override
+  /// التخلص من المتحكمات عند إغلاق الشاشة.
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
+  /// تحميل بيانات المستخدم من Firebase Auth ثم استكمالها من Firestore عند توفرها.
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -45,6 +52,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     _nameController.text = user.displayName ?? '';
     _photoUrl = user.photoURL ?? '';
 
+    // محاولة قراءة البيانات الإضافية المخزنة في Firestore مثل الهاتف والصورة.
     // Try to load extended profile from Firestore
     try {
       final data = await _userService.getCurrentUserProfile();
@@ -70,7 +78,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     }
   }
 
+  /// حفظ تعديلات الملف الشخصي في Firebase Auth وFirestore.
   Future<void> _saveProfile() async {
+    // التحقق من صحة الحقول قبل تنفيذ الحفظ.
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -79,12 +89,14 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
+      // تحديث اسم العرض في ملف المستخدم داخل Firebase Auth.
       // Update Firebase Auth profile
       await _authService.updateDisplayName(
         user: user,
         displayName: _nameController.text.trim(),
       );
 
+      // حفظ الحقول الإضافية داخل مستند المستخدم في Firestore.
       // Save extended profile to Firestore
       await _userService.updateCurrentUserProfile(
         displayName: _nameController.text.trim(),
@@ -132,6 +144,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   }
 
   @override
+  /// بناء واجهة الملف الشخصي مع حالات التحميل والتحقق والحفظ.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = AppTheme.getScaffoldBg(isDark);
@@ -162,6 +175,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+      // عرض مؤشر تحميل حتى تكتمل قراءة بيانات المستخدم الأولية.
       body: _isInitialLoading
           ? Center(
               child: CircularProgressIndicator(color: primary),
@@ -415,6 +429,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     );
   }
 
+  /// إنشاء الحرف الأول من الاسم كبديل عند غياب الصورة الشخصية.
   Widget _buildAvatarText(String name) {
     return Center(
       child: Text(
@@ -429,6 +444,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     );
   }
 
+  /// بناء عنوان صغير موحد لكل حقل داخل النموذج.
   Widget _buildFieldLabel(String label, bool isDark) {
     return Text(
       label,

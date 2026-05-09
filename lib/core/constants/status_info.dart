@@ -3,14 +3,19 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// Shared status badge model used across booking and service screens.
 /// Replaces the duplicated `_StatusInfo` classes found in multiple files.
+/// نموذج موحد لعرض الحالات داخل الشاشات من حيث النص واللون والأيقونة.
 class StatusInfo {
+  /// النص الظاهر للمستخدم.
   final String label;
+  /// اللون المرتبط بالحالة.
   final Color color;
+  /// الأيقونة الممثلة للحالة.
   final IconData icon;
 
   const StatusInfo(this.label, this.color, [this.icon = Icons.info_rounded]);
 
   // ── Booking status ─────────────────────────────────────────────
+  /// تحويل حالة الحجز النصية إلى معلومات عرض جاهزة للواجهة.
   static StatusInfo fromBookingStatus(String status) {
     switch (status) {
       case 'pending':
@@ -37,6 +42,7 @@ class StatusInfo {
   }
 
   // ── Service approval status ────────────────────────────────────
+  /// تحويل حالة اعتماد الخدمة إلى معلومات عرض موحدة.
   static StatusInfo fromApprovalStatus(String status) {
     switch (status) {
       case 'pending':
@@ -57,6 +63,7 @@ class StatusInfo {
   }
 
   // ── Variant with richer label for provider details ─────────────
+  /// تقديم نسخة تفصيلية من حالة الاعتماد لاستخدامها في بعض الشاشات الخاصة بالمزوّد.
   static StatusInfo fromApprovalStatusDetailed(String status) {
     switch (status) {
       case 'pending':

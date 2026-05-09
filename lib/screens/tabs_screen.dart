@@ -9,6 +9,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:homemate/core/theme/theme_provider.dart';
 
+/// الشاشة الرئيسية للعميل، وتدير التنقل بين التبويبات الأساسية للتطبيق.
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
 
@@ -17,12 +18,14 @@ class TabsScreen extends StatefulWidget {
 }
 
 class TabsScreenState extends State<TabsScreen> {
+  /// مؤشر التبويب الحالي والقائمة المرتبطة به من الشاشات.
   int _selectedScreenIndex = 0;
   late List<Widget> screens;
 
   final List<String> _titles = ['الرئيسية', 'المفضلة', 'حجوزاتي', 'الإعدادات'];
 
   @override
+  /// تهيئة الشاشات التي ستظهر داخل التبويبات السفلية.
   void initState() {
     super.initState();
     screens = [
@@ -33,6 +36,7 @@ class TabsScreenState extends State<TabsScreen> {
     ];
   }
 
+  /// تحديث التبويب النشط عند اختيار عنصر من شريط التنقل السفلي.
   void _selectScreen(int index) {
     setState(() {
       _selectedScreenIndex = index;
@@ -40,6 +44,7 @@ class TabsScreenState extends State<TabsScreen> {
   }
 
   @override
+  /// بناء واجهة التبويبات مع الشريط العلوي والتنقل السفلي.
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
@@ -70,6 +75,7 @@ class TabsScreenState extends State<TabsScreen> {
             padding: const EdgeInsets.only(left: 8, right: 8),
             child: GestureDetector(
               onTap: () {
+                // الانتقال إلى شاشة الملف الشخصي عند الضغط على صورة المستخدم.
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const ProfileInfoScreen(),
@@ -183,6 +189,7 @@ class TabsScreenState extends State<TabsScreen> {
     );
   }
 
+  /// بناء عنصر تنقل سفلي موحد لكل تبويب.
   Widget _buildNavItem({
     required IconData icon,
     required String label,
@@ -240,6 +247,7 @@ class TabsScreenState extends State<TabsScreen> {
     );
   }
 
+  /// إنشاء الحرف الأول من اسم المستخدم كبديل في صورة الملف الشخصي.
   Widget _buildAvatarInitial(String name) {
     return Center(
       child: Text(

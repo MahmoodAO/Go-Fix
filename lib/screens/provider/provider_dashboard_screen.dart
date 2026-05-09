@@ -9,6 +9,7 @@ import 'package:homemate/screens/provider/new_requests_screen.dart';
 
 /// لوحة تحكم مزوّد الخدمة – عرض ملخص سريع وأزرار إجراءات.
 /// Provider Dashboard – summary stats and quick actions.
+/// لوحة تحكم مزود الخدمة، وتعرض ملخص الإحصاءات وأزرار الوصول السريع.
 class ProviderDashboardScreen extends StatefulWidget {
   /// Callback to switch to a tab in the parent ProviderTabsScreen
   final void Function(int tabIndex)? onSwitchTab;
@@ -21,6 +22,7 @@ class ProviderDashboardScreen extends StatefulWidget {
 }
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
+  /// إحصاءات الخدمات والطلبات المعروضة في البطاقات العلوية.
   int _totalServices = 0;
   int _pendingServices = 0;
   int _pendingBookings = 0;
@@ -29,18 +31,21 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   StreamSubscription? _servicesSub;
 
   @override
+  /// بدء تحميل الإحصاءات فور فتح لوحة التحكم.
   void initState() {
     super.initState();
     _loadStats();
   }
 
   @override
+  /// إلغاء الاشتراكات المباشرة عند إغلاق الشاشة.
   void dispose() {
     _bookingSub?.cancel();
     _servicesSub?.cancel();
     super.dispose();
   }
 
+  /// تحميل إحصاءات المزود بالاعتماد على بث مباشر للخدمات والحجوزات.
   Future<void> _loadStats() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -49,6 +54,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       _servicesSub?.cancel();
       _bookingSub?.cancel();
 
+      // الاستماع لخدمات المزود لحساب الإجمالي وعدد الخدمات المعلقة.
       _servicesSub = ServiceService()
           .getProviderServicesStream(uid)
           .listen((services) {
@@ -64,6 +70,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         if (mounted) setState(() => _isLoading = false);
       });
 
+      // الاستماع لحجوزات المزود لحساب عدد الطلبات الجديدة المعلقة.
       _bookingSub =
           BookingService().getProviderBookingsStream(uid).listen((bookings) {
         if (mounted) {
@@ -79,6 +86,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 
   @override
+  /// بناء لوحة التحكم مع الإحصاءات والإجراءات السريعة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
@@ -91,6 +99,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ? Center(child: CircularProgressIndicator(color: primary))
           : RefreshIndicator(
               onRefresh: () async {
+                // إعادة تحميل الإحصاءات يدويًا عند السحب للتحديث.
                 setState(() => _isLoading = true);
                 await _loadStats();
               },
@@ -184,6 +193,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     // ── Quick Action: Add Service ──────────
                     GestureDetector(
                       onTap: () async {
+                        // فتح شاشة إضافة خدمة ثم تحديث الإحصاءات بعد العودة.
                         await Navigator.of(context).pushNamed('addservice');
                         // تحديث الإحصائيات بعد العودة
                         _loadStats();
@@ -295,6 +305,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
 // ───────────────────────────────────────────────────────────────────
 // Clickable Stat Card
 // ───────────────────────────────────────────────────────────────────
+/// بطاقة إحصائية قابلة للنقر تعرض قيمة مختصرة ضمن لوحة التحكم.
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -313,6 +324,7 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
+  /// بناء بطاقة الإحصاء مع دعم الضغط للتنقل إلى الشاشة المرتبطة.
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,

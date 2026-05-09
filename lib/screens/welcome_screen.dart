@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/core/utils/local_storage_service.dart';
 
+/// شاشة الترحيب، وتعرض صفحات تعريفية قبل دخول المستخدم إلى التطبيق.
 class WelcomScreen extends StatefulWidget {
   static String id = 'welcomScreen';
 
@@ -13,12 +14,14 @@ class WelcomScreen extends StatefulWidget {
 
 class _WelcomScreenState extends State<WelcomScreen>
     with TickerProviderStateMixin {
+  /// متحكم الصفحة ومؤشر الصفحة الحالية ومتحكمات الحركة.
   PageController nextpage = PageController();
   int pagenumber = 0;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
   @override
+  /// تهيئة حركة التلاشي المستخدمة عند الانتقال بين صفحات الترحيب.
   void initState() {
     super.initState();
     _fadeController = AnimationController(
@@ -33,12 +36,14 @@ class _WelcomScreenState extends State<WelcomScreen>
   }
 
   @override
+  /// التخلص من المتحكمات عند إغلاق شاشة الترحيب.
   void dispose() {
     nextpage.dispose();
     _fadeController.dispose();
     super.dispose();
   }
 
+  /// تحديث مؤشر الصفحة وإعادة تشغيل الحركة عند تغيير صفحة الترحيب.
   void onPageChanged(int value) {
     setState(() {
       pagenumber = value;
@@ -47,6 +52,7 @@ class _WelcomScreenState extends State<WelcomScreen>
     _fadeController.forward();
   }
 
+  /// بناء صفحة ترحيبية موحدة تحتوي على صورة وعنوان ووصف.
   Widget _buildOnboardingPage({
     required String imagePath,
     required String title,
@@ -121,6 +127,7 @@ class _WelcomScreenState extends State<WelcomScreen>
   }
 
   @override
+  /// بناء واجهة الصفحات التعريفية مع حفظ حالة الإكمال محليًا.
   Widget build(BuildContext context) {
     final isLast = pagenumber == 2;
     return Theme(
@@ -143,6 +150,7 @@ class _WelcomScreenState extends State<WelcomScreen>
                     child: pagenumber < 2
                         ? InkWell(
                             onTap: () async {
+                              // حفظ إنهاء الترحيب محليًا ثم الانتقال إلى شاشة الدخول.
                               await LocalStorageService.setOnboardingCompleted(true);
                               if (context.mounted) {
                                 Navigator.of(context).pushReplacementNamed('login');
@@ -230,6 +238,7 @@ class _WelcomScreenState extends State<WelcomScreen>
                         height: 56,
                         child: ElevatedButton(
                           onPressed: () async {
+                            // في الصفحة الأخيرة يتم إنهاء الترحيب، وإلا يتم الانتقال للصفحة التالية.
                             if (isLast) {
                               await LocalStorageService.setOnboardingCompleted(true);
                               if (context.mounted) {

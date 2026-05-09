@@ -6,6 +6,7 @@ import 'package:homemate/screens/provider/provider_booking_details_screen.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
 /// Shared booking card widget used by both NewRequestsScreen and ProviderBookingsScreen.
+/// بطاقة طلب الحجز للمزود، وتعرض ملخص الطلب مع إجراءات القبول أو الرفض.
 class ProviderBookingCard extends StatefulWidget {
   final Booking booking;
   final bool isDark;
@@ -23,11 +24,14 @@ class ProviderBookingCard extends StatefulWidget {
 }
 
 class _ProviderBookingCardState extends State<ProviderBookingCard> {
+  /// مؤشر يوضح أن تحديث حالة الحجز ما زال قيد التنفيذ.
   bool _isUpdating = false;
 
+  /// تحديث حالة الحجز من قبل المزود إلى مقبول أو مرفوض.
   Future<void> _updateStatus(String newStatus) async {
     setState(() => _isUpdating = true);
     try {
+      // تنفيذ العملية المناسبة بحسب الحالة المطلوبة.
       final s = BookingService();
       if (newStatus == 'accepted') {
         await s.acceptBooking(widget.booking.id);
@@ -46,6 +50,7 @@ class _ProviderBookingCardState extends State<ProviderBookingCard> {
   }
 
   @override
+  /// بناء بطاقة الطلب مع الانتقال إلى شاشة التفاصيل عند الضغط عليها.
   Widget build(BuildContext context) {
     final surfaceColor = AppTheme.getSurface(widget.isDark);
     final textPrimary = AppTheme.getTextPrimary(widget.isDark);
@@ -60,6 +65,7 @@ class _ProviderBookingCardState extends State<ProviderBookingCard> {
     return GestureDetector(
       onTap: widget.onTap ??
           () {
+            // فتح شاشة تفاصيل الطلب وتمرير كائن الحجز الحالي.
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const ProviderBookingDetailsScreen(),
@@ -252,6 +258,7 @@ class _ProviderBookingCardState extends State<ProviderBookingCard> {
     );
   }
 
+  /// بناء صف معلومات مختصر لعرض التاريخ أو الوقت أو العنوان أو الملاحظات.
   Widget _buildInfoRow(IconData icon, String text, Color textSecondary) {
     return Row(
       children: [

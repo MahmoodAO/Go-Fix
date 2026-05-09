@@ -12,6 +12,7 @@ import 'package:homemate/services/favorites_services.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 import 'package:homemate/services/user_service.dart';
 
+/// شاشة التصنيفات، وتعرض الفئات الرئيسية والخدمات المقترحة للمستخدم.
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
 
@@ -20,12 +21,15 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+  /// المستقبل الخاص بتحميل التصنيفات وخدمة المستخدم لجلب البيانات المساندة.
   late Future<List<Category>> _categoriesFuture;
   final UserService _userService = UserService();
+  /// اسم المستخدم الحالي ودوره لتخصيص الواجهة والصلاحيات.
   String _userName = '';
   String _userRole = 'customer'; // دور المستخدم الحالي
 
   @override
+  /// تحميل التصنيفات وبيانات المستخدم الأولية عند فتح الشاشة.
   void initState() {
     super.initState();
     _categoriesFuture = CategoryService().getCategories();
@@ -33,6 +37,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     _loadUserRole();
   }
 
+  /// تحديد اسم العرض الأنسب للمستخدم من Auth ثم Firestore ثم البريد الإلكتروني.
   Future<void> _loadUserName() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -41,12 +46,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
       return;
     }
 
+    // تفضيل اسم العرض من Firebase Auth لأنه الأسرع والأكثر مباشرة.
     // 1. Prefer Firebase Auth displayName
     if (user.displayName != null && user.displayName!.isNotEmpty) {
       if (mounted) setState(() => _userName = user.displayName!);
       return;
     }
 
+    // محاولة قراءة الاسم من Firestore في حال غيابه من المصادقة.
     // 2. Try fetching from Firestore users collection
     try {
       final name = await _userService.getUserDisplayName(user.uid);
@@ -56,6 +63,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       }
     } catch (_) {}
 
+    // استخدام بادئة البريد الإلكتروني كحل بديل أخير.
     // 3. Fallback to email prefix
     final email = user.email;
     if (email != null && email.contains('@')) {
@@ -66,18 +74,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   /// جلب دور المستخدم من التخزين المحلي
+  /// جلب دور المستخدم من التخزين المحلي لتحديد الصلاحيات داخل الواجهة.
   Future<void> _loadUserRole() async {
     final role = await LocalStorageService.getUserRole();
     if (mounted) setState(() => _userRole = role);
   }
 
   @override
+  /// بناء شاشة التصنيفات مع FutureBuilder والخدمات المقترحة والزر الخاص بالمزوّد.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // انتظار التصنيفات من Firestore ثم عرض الشبكة أو حالات الخطأ والفراغ.
       body: FutureBuilder<List<Category>>(
         future: _categoriesFuture,
         builder: (context, snapshot) {
@@ -244,6 +255,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               const SizedBox(height: 24),
                               ElevatedButton(
                                 onPressed: () {
+                                  // السماح بإضافة الخدمات لمزود الخدمة فقط.
                                   if (_userRole == 'provider') {
                                     Navigator.of(context).pushNamed('addservice');
                                   } else {
@@ -302,6 +314,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
+  /// بناء واجهة فارغة عند عدم توفر تصنيفات للعرض.
   Widget _buildEmptyState() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
@@ -337,6 +350,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
+  /// بناء واجهة خطأ عند فشل تحميل التصنيفات.
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
@@ -383,11 +397,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
+  /// تضمين قسم الخدمات المقترحة في نهاية الشاشة الرئيسية.
   Widget _buildRecommendedServices(BuildContext context, bool isDark, Color primary) {
     return RecommendedServicesSection(isDark: isDark, primary: primary);
   }
 }
 
+/// قسم الخدمات المقترحة، ويعرض أفضل الخدمات المقبولة حسب التقييم.
 class RecommendedServicesSection extends StatefulWidget {
   final bool isDark;
   final Color primary;
@@ -398,23 +414,27 @@ class RecommendedServicesSection extends StatefulWidget {
 }
 
 class _RecommendedServicesSectionState extends State<RecommendedServicesSection> {
+  /// حالة التحميل والقائمة النهائية للخدمات المقترحة مع مخزن بيانات المزودين.
   bool _isLoading = true;
   List<Map<String, dynamic>> _topServices = [];
   StreamSubscription? _servicesSub;
   final Map<String, Map<String, dynamic>> _providerCache = {};
 
   @override
+  /// بدء الاستماع للخدمات المقترحة فور إنشاء القسم.
   void initState() {
     super.initState();
     _listenRecommendedServices();
   }
 
   @override
+  /// إلغاء الاشتراك في البث المباشر عند إزالة القسم من الواجهة.
   void dispose() {
     _servicesSub?.cancel();
     super.dispose();
   }
 
+  /// الاستماع للخدمات المقبولة ثم فلترتها بحسب مزودين صالحين وترتيبها بالتقييم.
   void _listenRecommendedServices() {
     _servicesSub = FirebaseFirestore.instance
         .collection('services')
@@ -423,6 +443,7 @@ class _RecommendedServicesSectionState extends State<RecommendedServicesSection>
         .listen((snapshot) async {
       try {
 
+      // تجميع معرّفات المزودين المطلوبة لتقليل عدد طلبات القراءة.
       // 1. Collect unique provider IDs
       final Set<String> providerIds = {};
       for (var doc in snapshot.docs) {
@@ -432,6 +453,7 @@ class _RecommendedServicesSectionState extends State<RecommendedServicesSection>
         }
       }
 
+      // جلب بيانات المزودين غير المخزنة مسبقًا فقط لتقليل الاستهلاك.
       // 2. Batch-fetch only missing providers
       final List<String> missingIds = providerIds.where((id) => !_providerCache.containsKey(id)).toList();
       if (missingIds.isNotEmpty) {
@@ -447,6 +469,7 @@ class _RecommendedServicesSectionState extends State<RecommendedServicesSection>
         }
       }
 
+      // تصفية الخدمات الصالحة وترتيبها تنازليًا حسب متوسط التقييم.
       // 3. Filter valid provider services and sort
       final List<Map<String, dynamic>> validServices = [];
       for (var doc in snapshot.docs) {
@@ -487,6 +510,7 @@ class _RecommendedServicesSectionState extends State<RecommendedServicesSection>
   }
 
   @override
+  /// بناء قسم الخدمات المقترحة مع حالات التحميل والفراغ.
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const SizedBox(

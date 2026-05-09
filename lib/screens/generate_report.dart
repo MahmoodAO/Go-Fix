@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
+/// شاشة تقرير الخدمات، وتعرض ملخصًا إداريًا للحالات المخزنة في Firestore.
 class GenerateReportScreen extends StatelessWidget {
   const GenerateReportScreen({super.key});
 
+  /// جلب الخدمات من Firestore وتحويلها إلى بيانات مبسطة مناسبة للتقرير.
   Future<List<Map<String, dynamic>>> _fetchServices() async {
     final querySnapshot =
         await FirebaseFirestore.instance.collection('services').get();
 
+    // قراءة الحقول المهمة فقط لعرض حالة كل خدمة داخل التقرير.
     return querySnapshot.docs.map((doc) {
       final data = doc.data();
       return {
@@ -19,6 +22,7 @@ class GenerateReportScreen extends StatelessWidget {
     }).toList();
   }
 
+  /// تحديد لون الحالة لتمييز التقرير بصريًا.
   Color _getStatusColor(String status) {
     switch (status) {
       case 'accepted':
@@ -32,6 +36,7 @@ class GenerateReportScreen extends StatelessWidget {
     }
   }
 
+  /// تحويل قيمة الحالة الخام إلى نص عربي واضح للمستخدم.
   String _getStatusLabel(String status) {
     switch (status) {
       case 'accepted':
@@ -46,6 +51,7 @@ class GenerateReportScreen extends StatelessWidget {
   }
 
   @override
+  /// بناء واجهة التقرير مع استخدام FutureBuilder لحالات التحميل والخطأ والنتائج.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -55,6 +61,7 @@ class GenerateReportScreen extends StatelessWidget {
         ),
       ),
       backgroundColor: AppTheme.scaffoldBg,
+      // انتظار بيانات Firestore ثم عرض التقرير أو حالة الخطأ أو الفراغ.
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchServices(),
         builder: (context, snapshot) {

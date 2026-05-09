@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:homemate/core/theme/theme_provider.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
+/// شاشة المفضلة، وتعرض الخدمات التي حفظها المستخدم في قائمته الخاصة.
 class FavoriteServicesScreen extends StatefulWidget {
   const FavoriteServicesScreen({super.key});
 
@@ -15,16 +16,20 @@ class FavoriteServicesScreen extends StatefulWidget {
 }
 
 class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
+  /// آخر قائمة معرّفات مفضلة تم تحميلها لتجنب إعادة الجلب دون داعٍ.
   List<String>? _lastFavoriteIds;
+  /// المستقبل الذي يحمل تفاصيل الخدمات المفضلة بعد جلب معرّفاتها.
   Future<List<QueryDocumentSnapshot>>? _servicesFuture;
 
   /// Fetch only the services whose IDs are in [ids], batching by 10 (Firestore whereIn limit).
+  /// جلب الخدمات المفضلة على دفعات بما يتوافق مع حد whereIn في Firestore.
   Future<List<QueryDocumentSnapshot>> _fetchFavoriteServices(List<String> ids) async {
     final List<QueryDocumentSnapshot> results = [];
     final batches = <List<String>>[];
     for (var i = 0; i < ids.length; i += 10) {
       batches.add(ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10));
     }
+    // قراءة مستندات الخدمات المطابقة لمعرّفات المفضلة فقط.
     for (final batch in batches) {
       final snap = await FirebaseFirestore.instance
           .collection('services')
@@ -36,6 +41,7 @@ class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
   }
 
   /// Returns true if the two ID lists contain the same set of IDs.
+  /// مقارنة قائمتين من المعرّفات لتحديد الحاجة إلى إعادة التحميل.
   bool _idsEqual(List<String> a, List<String> b) {
     if (a.length != b.length) return false;
     final setA = Set<String>.from(a);
@@ -44,11 +50,13 @@ class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
   }
 
   @override
+  /// بناء شاشة المفضلة مع StreamBuilder للمعرّفات وFutureBuilder لتفاصيل الخدمات.
   Widget build(BuildContext context) {
     final FavoritesService favoritesService = FavoritesService();
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // الاستماع المباشر لتغييرات المفضلة الخاصة بالمستخدم الحالي.
       body: StreamBuilder<List<String>>(
         stream: favoritesService.getFavoriteServiceIdsStream(),
         builder: (context, favSnapshot) {
@@ -74,11 +82,13 @@ class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
           }
 
           // Only re-fetch when the set of IDs actually changes
+          // إعادة جلب تفاصيل الخدمات فقط عند تغير مجموعة المعرّفات فعليًا.
           if (_lastFavoriteIds == null || !_idsEqual(_lastFavoriteIds!, favoriteIds)) {
             _lastFavoriteIds = List<String>.from(favoriteIds);
             _servicesFuture = _fetchFavoriteServices(favoriteIds);
           }
 
+          // بعد وصول المعرّفات يتم جلب بيانات الخدمات الكاملة لعرضها في القائمة.
           return FutureBuilder<List<QueryDocumentSnapshot>>(
             future: _servicesFuture,
             builder: (context, servicesSnapshot) {
@@ -95,6 +105,7 @@ class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
                 );
               }
 
+              // استبعاد الخدمات غير المقبولة حتى لا تظهر عناصر غير متاحة للمستخدم.
               final favoriteServices = (servicesSnapshot.data ?? [])
                   .where((doc) {
                     final data = doc.data() as Map<String, dynamic>;
@@ -152,6 +163,7 @@ class _FavoriteServicesScreenState extends State<FavoriteServicesScreen> {
     );
   }
 
+  /// بناء واجهة بديلة عندما لا توجد خدمات مفضلة محفوظة.
   Widget _buildEmptyState(BuildContext context) {
     final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
 

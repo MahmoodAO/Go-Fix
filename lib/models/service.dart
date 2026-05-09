@@ -3,23 +3,39 @@ import 'package:homemate/core/utils/price_utils.dart';
 
 // enum : لتعريف أنواع ثابتة
 
+/// نموذج الخدمة، ويمثل بيانات الخدمة المعروضة أو المُدارة داخل التطبيق.
+/// نموذج الخدمة، ويمثل بيانات الخدمة المعروضة داخل التطبيق.
 class Service {
+  /// معرف الخدمة داخل Firestore.
   final String id;
+  /// معرف التصنيف المرتبط بالخدمة.
   final String categoryId;
+  /// عنوان الخدمة.
   final String title;
+  /// وصف الخدمة المقدم من مزوّد الخدمة.
   final String description;
+  /// رقم التواصل المرتبط بالخدمة.
   final String phone;
+  /// موقع تنفيذ الخدمة أو المدينة.
   final String location;
   /// حالة موافقة الإدارة على الخدمة – 'pending', 'accepted', 'rejected', 'inactive'
   /// Admin approval status for this service listing.
+  /// حالة اعتماد الإدارة للخدمة.
   final String approvalStatus;
+  /// اسم مزوّد الخدمة الظاهر للمستخدمين.
   final String providerName;
   final String providerId; // معرّف مزوّد الخدمة – Provider's uid
+  /// متوسط تقييمات المستخدمين للخدمة.
   final double averageRating;
+  /// عدد التقييمات المسجلة للخدمة.
   final int totalRatings;
+  /// السعر الابتدائي للخدمة إن وجد.
   final double? startingPrice;
+  /// رمز العملة المستخدم مع السعر.
   final String currency;
 
+  /// تهيئة كائن الخدمة بالقيم القادمة من التطبيق أو من قاعدة البيانات.
+  /// تهيئة كائن الخدمة من البيانات المحلية أو القادمة من Firestore.
   Service({
     required this.id,
     required this.categoryId,
@@ -38,12 +54,15 @@ class Service {
 
   //  factory: يحوّل (document) من Firestore إلى  Service.
   //  Reads `approvalStatus` first; falls back to legacy `status` field.
+  /// إنشاء نموذج الخدمة من مستند Firestore مع دعم الحقول القديمة للحالة.
+  /// إنشاء نموذج خدمة من مستند Firestore مع دعم الحقول القديمة للحالة.
   factory Service.fromFirestore(DocumentSnapshot doc) {
     if (!doc.exists || doc.data() == null) {
       throw Exception("Service document not found or empty");
     }
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
+    // قراءة بيانات الخدمة مع توفير قيم افتراضية عند غياب بعض الحقول.
     return Service(
       id: doc.id,
       categoryId: data.containsKey('categoryId') ? data['categoryId'] : '',

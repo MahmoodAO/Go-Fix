@@ -7,10 +7,12 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة الطلبات الجديدة – تعرض فقط الحجوزات بحالة "pending".
 /// New Requests Screen – shows ONLY pending bookings for the current provider.
+/// شاشة الطلبات الجديدة، وتعرض الحجوزات المعلقة فقط لمزود الخدمة الحالي.
 class NewRequestsScreen extends StatelessWidget {
   const NewRequestsScreen({super.key});
 
   @override
+  /// بناء شاشة الطلبات الجديدة مع بث مباشر للحجوزات المعلقة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.getPrimary(isDark);
@@ -55,6 +57,7 @@ class NewRequestsScreen extends StatelessWidget {
           ),
         ),
       ),
+      // عند عدم وجود مستخدم يتم عرض حالة بديلة، وإلا يتم تحميل الطلبات المباشرة.
       body: user == null
           ? _buildEmptyState(isDark, Icons.login_rounded,
               'يرجى تسجيل الدخول لعرض الطلبات')
@@ -74,6 +77,7 @@ class NewRequestsScreen extends StatelessWidget {
                       '⚠️ New requests stream error: ${snapshot.error}');
                 }
 
+                // تصفية النتائج لعرض الطلبات الجديدة التي ما زالت بانتظار القرار فقط.
                 // Filter to pending only
                 final pendingBookings = (snapshot.data ?? [])
                     .where((b) => b.bookingStatus == 'pending')
@@ -103,6 +107,7 @@ class NewRequestsScreen extends StatelessWidget {
     );
   }
 
+  /// بناء واجهة فارغة أو بديلة عند عدم وجود طلبات جديدة.
   Widget _buildEmptyState(bool isDark, IconData icon, String message) {
     return Center(
       child: Column(

@@ -8,6 +8,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 /// شاشة الحجز – تتيح للمستخدم اختيار التاريخ والوقت وإدخال العنوان وملاحظات.
 /// BookingScreen – allows the user to pick date/time, enter address & notes,
 /// then confirm the booking.
+/// شاشة الحجز، وتسمح للمستخدم باختيار الموعد وإرسال طلب الحجز للخدمة.
 class BookingScreen extends StatefulWidget {
   static const screenRoute = '/booking';
 
@@ -18,16 +19,20 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  /// مفتاح النموذج ومتحكمات الحقول النصية الخاصة بالعناوين والملاحظات.
   final _formKey = GlobalKey<FormState>();
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
+  /// خدمة الحجوزات المسؤولة عن إنشاء الحجز في Firestore.
   final BookingService _bookingService = BookingService();
 
+  /// القيم المختارة للموعد وحالة إرسال الطلب.
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isSubmitting = false;
 
   @override
+  /// التخلص من المتحكمات عند إغلاق الشاشة.
   void dispose() {
     _addressController.dispose();
     _notesController.dispose();
@@ -35,6 +40,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // ─── Date Picker ──────────────────────────────────────────────────
+  /// فتح منتقي التاريخ لتحديد موعد تنفيذ الخدمة.
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -59,6 +65,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // ─── Time Picker ──────────────────────────────────────────────────
+  /// فتح منتقي الوقت لاختيار ساعة الحجز.
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -80,8 +87,10 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // ─── Submit Booking ───────────────────────────────────────────────
+  /// إنشاء طلب الحجز بعد التحقق من الموعد والبيانات المطلوبة.
   Future<void> _submitBooking(Service service, String? categoryName) async {
     // التحقق من اختيار التاريخ والوقت
+    // التحقق من اختيار التاريخ والوقت قبل إنشاء الطلب.
     if (_selectedDate == null) {
       _showError('يرجى اختيار تاريخ الحجز');
       return;
@@ -91,9 +100,11 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
     // التحقق من صحة الحقول النصية
+    // التحقق من الحقول النصية مثل العنوان قبل الحفظ.
     if (!_formKey.currentState!.validate()) return;
 
     // التحقق من تسجيل الدخول
+    // لا يمكن إنشاء الحجز بدون مستخدم مسجل الدخول.
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       _showError('يرجى تسجيل الدخول أولاً لإتمام الحجز');
@@ -104,9 +115,11 @@ class _BookingScreenState extends State<BookingScreen> {
 
     try {
       // تحويل الوقت إلى نص
+      // تحويل الوقت المختار إلى صيغة نصية مناسبة للتخزين والعرض.
       final timeString =
           '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
+      // تجهيز نموذج الحجز الكامل قبل حفظه في Firestore.
       final booking = Booking(
         userId: user.uid,
         userName: user.displayName ?? user.email?.split('@').first ?? 'عميل',
@@ -122,6 +135,7 @@ class _BookingScreenState extends State<BookingScreen> {
         currency: service.currency,
       );
 
+      // تنفيذ عملية الحفظ الفعلية لطلب الحجز.
       await _bookingService.createBooking(booking);
 
       if (!mounted) return;
@@ -148,6 +162,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  /// عرض رسالة خطأ موحدة في أسفل الشاشة.
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -163,13 +178,16 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // ─── Build ────────────────────────────────────────────────────────
   @override
+  /// بناء واجهة الحجز مع النموذج وحقول الموعد والتأكيد.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // استقبال الخدمة المختارة واسم التصنيف من الشاشة السابقة.
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final service = args?['service'] as Service?;
     final categoryName = args?['categoryName'] as String?;
 
+    // إظهار حالة بديلة إذا لم تصل بيانات الخدمة بشكل صحيح.
     if (service == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('حجز الخدمة')),
@@ -346,6 +364,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // ─── Service Info Card ──────────────────────────────────────────
+  /// بناء بطاقة مختصرة تعرض معلومات الخدمة قبل تأكيد الحجز.
   Widget _buildServiceInfoCard({
     required Service service,
     required String? categoryName,
@@ -446,6 +465,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   // ─── Picker Tile (reusable for date & time) ─────────────────────
+  /// بناء عنصر قابل للنقر لاختيار التاريخ أو الوقت بصيغة موحدة.
   Widget _buildPickerTile({
     required IconData icon,
     required String label,

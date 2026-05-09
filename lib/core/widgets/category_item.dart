@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:homemate/screens/category_services_screen.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
+/// عنصر تصنيف، ويعرض بطاقة قابلة للنقر للانتقال إلى خدمات التصنيف المحدد.
 class CategoryItem extends StatelessWidget {
   final String id;
   final String title;
@@ -9,6 +10,7 @@ class CategoryItem extends StatelessWidget {
 
   const CategoryItem(this.id, this.title, this.image, {super.key});
 
+  /// اختيار صورة مناسبة للتصنيف اعتمادًا على المعرّف أو العنوان مع وجود بديل افتراضي.
   String get _mappedImage {
     final lowerId = id.toLowerCase();
     final lowerTitle = title.toLowerCase();
@@ -26,6 +28,7 @@ class CategoryItem extends StatelessWidget {
     return image.isNotEmpty ? image : 'images/m1.png';
   }
 
+  /// التنقل إلى شاشة خدمات التصنيف مع تمرير البيانات المطلوبة.
   void selectCategory(BuildContext ctx) {
     Navigator.of(ctx).pushNamed(
       CategoryServicesScreen.screenRoute,
@@ -34,6 +37,7 @@ class CategoryItem extends StatelessWidget {
   }
 
   @override
+  /// بناء بطاقة التصنيف مع الصورة والعنوان والتأثيرات البصرية.
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => selectCategory(context),

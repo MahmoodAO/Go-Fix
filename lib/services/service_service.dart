@@ -6,11 +6,16 @@ import 'package:flutter/foundation.dart';
 import 'package:homemate/models/service.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
+/// نموذج مساعد يجمع هوية مزود الخدمة بعد حلّها من المصادقة وFirestore.
 class ResolvedProviderIdentity {
+  /// معرّف مزود الخدمة المستخدم في ربط الخدمات بصاحبها.
   final String uid;
+  /// اسم مزود الخدمة الذي سيظهر للمستخدمين داخل التطبيق.
   final String displayName;
+  /// البريد الإلكتروني لمزود الخدمة لاستخدامه في البيانات المساندة.
   final String email;
 
+  /// تهيئة بيانات هوية مزود الخدمة بعد التحقق منها.
   const ResolvedProviderIdentity({
     required this.uid,
     required this.displayName,
@@ -18,11 +23,14 @@ class ResolvedProviderIdentity {
   });
 }
 
+/// خدمة الخدمات، وتدير إنشاء الخدمات وجلبها وتعديلها وحذفها وتقييمها.
 class ServiceService {
+  /// مرجع مجموعة الخدمات داخل Firestore.
   final CollectionReference _serviceCollection = FirebaseFirestore.instance
       .collection('services');
   // متغير خاص بالسيرفس الموجودة بالفير ستور بحيث نقدر نسحب منها او نعدل عليها
 
+  /// جلب جميع الخدمات ثم ترتيبها تنازليًا حسب متوسط التقييم.
   Future<List<Service>> getServices() async {
     final querySnapshot = await _serviceCollection.get();
     final services = querySnapshot.docs.map((doc) => Service.fromFirestore(doc)).toList();
@@ -30,6 +38,7 @@ class ServiceService {
     return services;
   }
 
+  /// تحديد هوية مزود الخدمة الحالية اعتمادًا على بيانات Auth وFirestore.
   Future<ResolvedProviderIdentity> resolveCurrentProviderIdentity() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -37,6 +46,7 @@ class ServiceService {
     }
 
     String? profileName;
+    // محاولة قراءة الاسم من ملف المستخدم لضمان إظهار اسم احترافي للخدمة.
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -58,6 +68,7 @@ class ServiceService {
       debugPrint('Error loading provider profile: $e');
     }
 
+    // استخدام بدائل محلية عند غياب الاسم المخزن في الملف الشخصي.
     final resolvedName =
         profileName ??
         _cleanString(user.displayName) ??
@@ -71,6 +82,7 @@ class ServiceService {
     );
   }
 
+  /// إنشاء خدمة جديدة لمزود الخدمة مع ضبط حالتها الأولية للمراجعة.
   Future<void> createProviderService({
     required String categoryId,
     required String title,
@@ -91,9 +103,11 @@ class ServiceService {
       isNewService: true,
     );
 
+    // حفظ بيانات الخدمة الجديدة في Firestore.
     await _serviceCollection.add(serviceData);
   }
 
+  /// تحديث بيانات خدمة موجودة مع الحفاظ على هوية مزود الخدمة المعتمدة.
   Future<void> updateProviderService({
     required String serviceId,
     required String categoryId,
@@ -115,10 +129,12 @@ class ServiceService {
       isNewService: false,
     );
 
+    // تحديث مستند الخدمة المحدد دون تغيير منطق الربط مع المزود.
     await _serviceCollection.doc(serviceId).update(serviceData);
   }
 
   // جلب الخدمات المقبولة فقط (التي وافق عليها الأدمن)
+  /// جلب الخدمات المقبولة فقط لعرضها للمستخدمين النهائيين.
   Future<List<Service>> getAcceptedServices() async {
     final querySnapshot = await _serviceCollection
         .where('approvalStatus', isEqualTo: 'accepted')
@@ -130,6 +146,7 @@ class ServiceService {
   }
 
   // بسترجع خدمة بالاعتماد على  ال id
+  /// جلب خدمة واحدة بواسطة معرّفها مع إظهار خطأ واضح إن لم تكن موجودة.
   Future<Service> getServiceById(String id) async {
     final doc = await _serviceCollection.doc(id).get();
     if (!doc.exists) {
@@ -139,6 +156,7 @@ class ServiceService {
   }
 
   // بجيب كل الخدمات التي تنتمي إلى تصنيف معيّن
+  /// جلب الخدمات التابعة لتصنيف محدد ثم ترتيبها حسب التقييم.
   Future<List<Service>> getServicesByCategoryId(String categoryId) async {
     final query =
         await FirebaseFirestore.instance
@@ -150,6 +168,7 @@ class ServiceService {
     return services;
   }
 
+  /// جلب الخدمات المعلقة بانتظار موافقة الإدارة مع دعم التصفية حسب التصنيف.
   Future<List<Service>> getPendingServices({String? categoryId}) async {
     Query query = _serviceCollection
         .where('approvalStatus', isEqualTo: 'pending');
@@ -166,6 +185,7 @@ class ServiceService {
 
   /// جلب خدمات مزوّد خدمة معيّن بناءً على providerId.
   /// Retrieves a stream of all accepted services
+  /// الاستماع المباشر لتغييرات الخدمات المقبولة وعرضها فورًا في الواجهة.
   Stream<List<Service>> getAcceptedServicesStream() {
     return _serviceCollection
         .where('approvalStatus', isEqualTo: 'accepted')
@@ -175,6 +195,7 @@ class ServiceService {
   }
 
   /// Retrieves a stream of accepted services belonging to a category
+  /// الاستماع المباشر للخدمات المقبولة ضمن تصنيف محدد.
   Stream<List<Service>> getAcceptedCategoryServicesStream(String categoryId) {
     return _serviceCollection
         .where('categoryId', isEqualTo: categoryId)
@@ -188,6 +209,7 @@ class ServiceService {
   }
 
   /// Fetches all services belonging to a specific provider.
+  /// جلب جميع الخدمات التي يملكها مزود خدمة محدد.
   Future<List<Service>> getProviderServices(String providerId) async {
     final query = await _serviceCollection
         .where('providerId', isEqualTo: providerId)
@@ -197,6 +219,7 @@ class ServiceService {
   }
 
   /// Real-time stream of services for a provider.
+  /// بث مباشر لخدمات مزود الخدمة لتحديث الواجهة عند أي تعديل.
   Stream<List<Service>> getProviderServicesStream(String providerId) {
     return _serviceCollection
         .where('providerId', isEqualTo: providerId)
@@ -205,6 +228,7 @@ class ServiceService {
             snapshot.docs.map((doc) => Service.fromFirestore(doc)).toList());
   }
 
+  /// جلب الخدمات غير النشطة لاستخدامها في الشاشات الإدارية عند الحاجة.
   Future<List<Service>> getInActiveServices() async {
     final query = await _serviceCollection
         .where('approvalStatus', isEqualTo: 'inactive')
@@ -217,6 +241,7 @@ class ServiceService {
 
   /// تحديث حالة الموافقة على الخدمة (يستخدمها الأدمن)
   /// Updates the admin approval status of a service.
+  /// تحديث حالة اعتماد الخدمة من قبل الإدارة.
   Future<void> updateApprovalStatus(String serviceId, String newStatus) async {
     await FirebaseFirestore.instance
         .collection('services')
@@ -225,15 +250,18 @@ class ServiceService {
   }
 
   /// Legacy: reject (delegates to updateApprovalStatus)
+  /// دالة توافقية لتحويل حالة الخدمة إلى مرفوضة عبر الدالة الأساسية.
   Future<void> updateStatusToRejected(String serviceId) async {
     await updateApprovalStatus(serviceId, 'rejected');
   }
 
   // Transaction based rating
+  /// تنفيذ تقييم الخدمة داخل معاملة آمنة للحفاظ على دقة المتوسط وعدد التقييمات.
   Future<void> rateService(String serviceId, String userId, double rating) async {
     final serviceDocRef = _serviceCollection.doc(serviceId);
     final ratingDocRef = serviceDocRef.collection('ratings').doc(userId);
 
+    // استخدام المعاملة يمنع تضارب القيم عند وجود أكثر من تقييم في نفس الوقت.
     await FirebaseFirestore.instance.runTransaction((transaction) async {
       final serviceSnapshot = await transaction.get(serviceDocRef);
       if (!serviceSnapshot.exists) {
@@ -246,6 +274,7 @@ class ServiceService {
       int currentTotalRatings = data != null && data.containsKey('totalRatings') ? data['totalRatings'] as int : 0;
       double currentAverage = data != null && data.containsKey('averageRating') ? (data['averageRating'] as num).toDouble() : 0.0;
 
+      // إذا كان المستخدم قيّم سابقًا يتم تحديث المتوسط بدل زيادة عدد التقييمات.
       if (ratingSnapshot.exists) {
         final oldRatingData = ratingSnapshot.data() as Map<String, dynamic>?;
         double oldRating = oldRatingData != null && oldRatingData.containsKey('rating') 
@@ -269,6 +298,7 @@ class ServiceService {
         }
         transaction.update(ratingDocRef, {'rating': rating});
       } else {
+        // في أول تقييم من هذا المستخدم يتم زيادة العدد وإعادة احتساب المتوسط.
         double newSum = (currentAverage * currentTotalRatings) + rating;
         int newTotal = currentTotalRatings + 1;
         double newAverage = newSum / newTotal;
@@ -288,12 +318,14 @@ class ServiceService {
 
   /// Safely deletes a service and its ratings subcollection.
   /// Favorites referencing this service are also removed.
+  /// حذف الخدمة بشكل آمن مع تنظيف التقييمات والمفضلة والحجوزات المرتبطة بها.
   Future<void> deleteService(String serviceId) async {
     final serviceDocRef = _serviceCollection.doc(serviceId);
 
     WriteBatch batch = FirebaseFirestore.instance.batch();
     int ops = 0;
 
+    /// تنفيذ الحفظ على دفعات لتجنب تجاوز الحد الأقصى لعمليات Firestore في الدفعة الواحدة.
     Future<void> commitBatchIfNeeded() async {
       if (ops >= 450) {
         await batch.commit();
@@ -304,6 +336,7 @@ class ServiceService {
 
     try {
       // 1. Delete ratings subcollection (Firestore does not cascade)
+      // حذف التقييمات المرتبطة لأن Firestore لا يحذف المجموعات الفرعية تلقائيًا.
       final ratingsSnap = await serviceDocRef.collection('ratings').get();
       for (final doc in ratingsSnap.docs) {
         batch.delete(doc.reference);
@@ -313,6 +346,7 @@ class ServiceService {
 
       // 2. Remove from all users' favorites reliably
       try {
+        // إزالة الخدمة من مفضلة جميع المستخدمين حتى لا تبقى مراجع غير صالحة.
         final usersSnap = await FirebaseFirestore.instance.collection('users').get();
         for (final userDoc in usersSnap.docs) {
           final favDocRef = userDoc.reference.collection('favorite_services').doc(serviceId);
@@ -326,6 +360,7 @@ class ServiceService {
 
       // 3. Cancel all associated bookings safely
       try {
+        // إلغاء الحجوزات المرتبطة بالخدمة المحذوفة مع تحديث حالتها بشكل صريح.
         final bookingsSnap = await FirebaseFirestore.instance
             .collection('bookings')
             .where('serviceId', isEqualTo: serviceId)
@@ -357,6 +392,7 @@ class ServiceService {
     }
   }
 
+  /// تجهيز بيانات الخدمة قبل الحفظ أو التعديل لضمان توحيد الحقول المطلوبة.
   Map<String, dynamic> _buildProviderServiceData({
     required ResolvedProviderIdentity identity,
     required String categoryId,
@@ -367,6 +403,7 @@ class ServiceService {
     required double startingPrice,
     required bool isNewService,
   }) {
+    // عند إنشاء خدمة جديدة يتم ضبط الحالة كمعلقة وإضافة بيانات البداية الافتراضية.
     return {
       'categoryId': categoryId,
       'title': title,
@@ -386,6 +423,7 @@ class ServiceService {
     };
   }
 
+  /// قراءة أول قيمة نصية غير فارغة من مجموعة مفاتيح محتملة.
   String? _readFirstNonEmptyString(
     Map<String, dynamic> data,
     List<String> keys,
@@ -399,12 +437,14 @@ class ServiceService {
     return null;
   }
 
+  /// تنظيف النص من الفراغات واستبعاد القيم الفارغة.
   String? _cleanString(dynamic value) {
     if (value is! String) return null;
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  /// استخراج الجزء السابق لعلامة @ لاستخدامه كاسم بديل عند الحاجة.
   String? _emailPrefix(String? email) {
     final cleanedEmail = _cleanString(email);
     if (cleanedEmail == null || !cleanedEmail.contains('@')) return null;

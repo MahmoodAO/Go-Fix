@@ -1,16 +1,19 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
 
+/// قائمة ظلال مخصصة تسمح بإرجاع نسخة مناسبة للوضع الفاتح أو الداكن.
 class _PremiumShadowList extends ListBase<BoxShadow> {
   final List<BoxShadow> _light;
   final List<BoxShadow> _dark;
 
+  /// تهيئة الظلال الخاصة بكل وضع لوني.
   _PremiumShadowList({
     required List<BoxShadow> light,
     required List<BoxShadow> dark,
   })  : _light = List<BoxShadow>.from(light),
         _dark = List<BoxShadow>.from(dark);
 
+  /// إرجاع مجموعة الظلال المناسبة بحسب حالة الثيم.
   List<BoxShadow> call([bool isDark = false]) {
     return isDark ? _dark : _light;
   }
@@ -34,7 +37,9 @@ class _PremiumShadowList extends ListBase<BoxShadow> {
   }
 }
 
+/// مدير الثيم المركزي، ويجمع الألوان والثيمات والمساعدات البصرية للتطبيق.
 class AppTheme {
+  /// مُنشئ خاص لمنع إنشاء كائنات من هذا الصنف لأنه ثابت الأدوات.
   AppTheme._();
 
   // ─── Brand Colors (Teal / Petrol Blue Identity) ───────────────────
@@ -130,11 +135,13 @@ class AppTheme {
     ),
   ];
 
+  /// جلب الظلال المناسبة للعناصر حسب الثيم الحالي.
   static List<BoxShadow> getPremiumShadow(bool isDark) {
     return premiumShadow(isDark);
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────
+  /// تحديد لون الخلفية الأساسية للشاشات بحسب الثيم.
   static Color getScaffoldBg(bool isDark) =>
       isDark ? darkScaffoldBg : lightScaffoldBg;
 
@@ -163,6 +170,7 @@ class AppTheme {
       isDark ? accentLight : accentColor;
 
   // ─── Input Decoration ─────────────────────────────────────────────
+  /// بناء نمط موحد لحقول الإدخال في جميع الشاشات.
   static InputDecoration inputDecoration({
     String label = '',
     bool isDark = false,
@@ -222,6 +230,7 @@ class AppTheme {
   }
 
   // ─── ThemeData Generators ─────────────────────────────────────────
+  /// إنشاء ThemeData كامل للوضع الفاتح أو الداكن اعتمادًا على القيم الموحدة.
   static ThemeData getTheme(bool isDark) {
     final bg = getScaffoldBg(isDark);
     final surface = getSurface(isDark);
@@ -305,6 +314,8 @@ class AppTheme {
     );
   }
 
+  /// الثيم الجاهز للوضع الفاتح.
   static ThemeData get lightTheme => getTheme(false);
+  /// الثيم الجاهز للوضع الداكن.
   static ThemeData get darkTheme => getTheme(true);
 }

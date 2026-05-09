@@ -12,6 +12,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// تنفيذ ترحيل لمرة واحدة لنسخ الحقل القديم إلى الحقل المعتمد الجديد.
 Future<void> migrateStatusToApprovalStatus() async {
   final db = FirebaseFirestore.instance;
   final servicesSnap = await db.collection('services').get();
@@ -19,10 +20,12 @@ Future<void> migrateStatusToApprovalStatus() async {
   int migratedCount = 0;
   final WriteBatch batch = db.batch();
 
+  // المرور على جميع الخدمات وتحديث المستندات التي ما زالت تستخدم الحقل القديم.
   for (final doc in servicesSnap.docs) {
     final data = doc.data();
 
     // Only migrate docs that have legacy `status` but no `approvalStatus`
+    // ترحيل المستند فقط إذا كان الحقل الجديد غير موجود بعد.
     if (data.containsKey('status') && !data.containsKey('approvalStatus')) {
       batch.update(doc.reference, {
         'approvalStatus': data['status'],
@@ -31,6 +34,7 @@ Future<void> migrateStatusToApprovalStatus() async {
     }
 
     // Commit in batches of 400 (Firestore limit is 500)
+    // حفظ التعديلات على دفعات لتجنب تجاوز حدود Firestore.
     if (migratedCount > 0 && migratedCount % 400 == 0) {
       await batch.commit();
     }

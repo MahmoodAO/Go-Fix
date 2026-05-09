@@ -9,6 +9,7 @@ import 'package:homemate/services/service_service.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
+/// شاشة إضافة أو تعديل خدمة، وتدير إدخال بيانات الخدمة وحفظها في Firestore.
 class AddService extends StatefulWidget {
   final Service? serviceToEdit;
 
@@ -19,15 +20,20 @@ class AddService extends StatefulWidget {
 }
 
 class _AddServiceState extends State<AddService> {
+  /// مفتاح النموذج للتحقق من صحة البيانات قبل الإرسال.
   final _formKey = GlobalKey<FormState>();
+  /// خدمة الخدمات المسؤولة عن إنشاء الخدمة أو تحديثها.
   final ServiceService _serviceService = ServiceService();
 
+  /// قائمة التصنيفات المحمّلة من Firestore والتصنيف المختار حاليًا.
   List<Category> _categories = [];
   Category? _selectedCategory;
+  /// متغيرات حالة الإرسال وبيانات المزود الظاهرة في الواجهة.
   bool _isSubmitting = false;
   String _providerDisplayName = '';
   String _providerEmail = '';
 
+  /// متحكمات حقول إدخال بيانات الخدمة.
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -36,11 +42,13 @@ class _AddServiceState extends State<AddService> {
       TextEditingController();
 
   @override
+  /// تحميل التصنيفات وهوية مزود الخدمة وملء الحقول عند التعديل.
   void initState() {
     super.initState();
     _fetchCategories();
     _loadProviderIdentity();
 
+    // عند تعديل خدمة موجودة يتم تعبئة الحقول الحالية لعرضها في النموذج.
     if (widget.serviceToEdit != null) {
       final service = widget.serviceToEdit!;
       _titleController.text = service.title;
@@ -54,11 +62,13 @@ class _AddServiceState extends State<AddService> {
     }
   }
 
+  /// جلب التصنيفات من Firestore لإتاحتها داخل قائمة الاختيار.
   Future<void> _fetchCategories() async {
     try {
       final fetched = await CategoryService().getCategories();
       if (!mounted) return;
 
+      // حفظ التصنيفات محليًا مع إعادة تحديد التصنيف إذا كانت الشاشة في وضع التعديل.
       setState(() {
         _categories = fetched;
         if (widget.serviceToEdit != null) {
@@ -76,9 +86,11 @@ class _AddServiceState extends State<AddService> {
     }
   }
 
+  /// تحميل هوية مزود الخدمة الحالية من Auth وFirestore لعرضها أعلى النموذج.
   Future<void> _loadProviderIdentity() async {
     final user = FirebaseAuth.instance.currentUser;
 
+    // عرض بيانات بديلة مباشرة حتى قبل اكتمال قراءة الهوية النهائية.
     if (mounted) {
       setState(() {
         _providerDisplayName = _buildLocalProviderFallback(user);
@@ -89,6 +101,7 @@ class _AddServiceState extends State<AddService> {
     if (user == null) return;
 
     try {
+      // قراءة الاسم النهائي من Firestore إن توفر لإظهاره بشكل معتمد في الخدمة.
       final identity = await _serviceService.resolveCurrentProviderIdentity();
       if (!mounted) return;
 
@@ -103,6 +116,7 @@ class _AddServiceState extends State<AddService> {
     }
   }
 
+  /// إنشاء اسم بديل محلي للمزوّد عند غياب الاسم المخزن في الملف الشخصي.
   String _buildLocalProviderFallback(User? user) {
     final authName = user?.displayName?.trim();
     if (authName != null && authName.isNotEmpty) {
@@ -118,6 +132,7 @@ class _AddServiceState extends State<AddService> {
   }
 
   @override
+  /// التخلص من المتحكمات عند إغلاق الشاشة.
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
@@ -127,12 +142,15 @@ class _AddServiceState extends State<AddService> {
     super.dispose();
   }
 
+  /// حفظ النموذج بعد التحقق من البيانات وإنشاء الخدمة أو تحديثها.
   Future<void> _saveForm() async {
+    // التحقق من صحة جميع الحقول قبل بدء الحفظ.
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
 
     try {
+      // التحقق من وجود مستخدم مسجل قبل السماح بإضافة خدمة.
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -146,8 +164,10 @@ class _AddServiceState extends State<AddService> {
       final description = _descriptionController.text.trim();
       final phone = _phoneController.text.trim();
       final location = _locationController.text.trim();
+      // تحليل السعر كنص وتحويله إلى قيمة رقمية صالحة للحفظ.
       final startingPrice = parsePriceValue(_startingPriceController.text.trim());
 
+      // منع الحفظ إذا لم يتم اختيار تصنيف للخدمة.
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('يرجى اختيار تصنيف الخدمة')),
@@ -172,6 +192,7 @@ class _AddServiceState extends State<AddService> {
         return;
       }
 
+      // التمييز بين إنشاء خدمة جديدة وتحديث خدمة موجودة.
       if (widget.serviceToEdit != null) {
         await _serviceService.updateProviderService(
           serviceId: widget.serviceToEdit!.id,
@@ -204,6 +225,7 @@ class _AddServiceState extends State<AddService> {
           ),
         ),
       );
+      // إرجاع نتيجة نجاح للشاشة السابقة بعد اكتمال العملية.
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
@@ -218,6 +240,7 @@ class _AddServiceState extends State<AddService> {
     }
   }
 
+  /// بناء عنوان موحد للأقسام الرئيسية داخل النموذج.
   Widget _buildSectionHeader(String title, IconData icon, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -239,6 +262,7 @@ class _AddServiceState extends State<AddService> {
     );
   }
 
+  /// بناء بطاقة تعرض هوية مزود الخدمة التي ستربط بالخدمة عند الحفظ.
   Widget _buildProviderIdentityCard(bool isDark) {
     final providerName = _providerDisplayName.trim().isNotEmpty
         ? _providerDisplayName.trim()
@@ -331,6 +355,7 @@ class _AddServiceState extends State<AddService> {
   }
 
   @override
+  /// بناء واجهة إضافة الخدمة مع حالات التحميل والتحقق والإرسال.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -364,6 +389,7 @@ class _AddServiceState extends State<AddService> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+      // عرض مؤشر تحميل حتى تكتمل قراءة التصنيفات المطلوبة للنموذج.
       body: _categories.isEmpty
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryColor),
@@ -464,6 +490,7 @@ class _AddServiceState extends State<AddService> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                            // التحقق من صحة السعر الابتدائي قبل الإرسال إلى Firestore.
                             validator: (value) {
                               final trimmed = value?.trim() ?? '';
                               if (trimmed.isEmpty) {

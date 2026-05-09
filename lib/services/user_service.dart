@@ -4,18 +4,22 @@ import 'package:flutter/foundation.dart';
 
 /// Ø®Ø¯Ù…Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… â€“ ØªØ¯ÙŠØ± Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙˆØ£Ø¯ÙˆØ§Ø±Ù‡ ÙÙŠ Firestore.
 /// UserService â€“ manages user profile and role data in Firestore.
+/// خدمة المستخدم، وتدير بيانات الملف الشخصي والأدوار داخل Firestore.
 class UserService {
   UserService({FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore})
       : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
         _usersCollection =
             (firestore ?? FirebaseFirestore.instance).collection('users');
 
+  /// مرجع المصادقة للوصول إلى المستخدم الحالي عند الحاجة.
   final FirebaseAuth _firebaseAuth;
+  /// مرجع مجموعة المستخدمين داخل Firestore.
   final CollectionReference<Map<String, dynamic>> _usersCollection;
 
   /// Ø¬Ù„Ø¨ Ø¯ÙˆØ± Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ù† Firestore (customer Ø£Ùˆ provider).
   /// Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ø§Ù„Ø­Ù‚Ù„ Ù…ÙˆØ¬ÙˆØ¯Ø§Ù‹ØŒ ÙŠØ±Ø¬Ø¹ "customer" ÙƒÙ‚ÙŠÙ…Ø© Ø§ÙØªØ±Ø§Ø¶ÙŠØ©.
   /// Fetches the user's role. Defaults to "customer" if missing.
+  /// جلب دور المستخدم لتحديد الصلاحيات ومسار التنقل داخل التطبيق.
   Future<String> getUserRole(String uid) async {
     try {
       final doc = await _usersCollection.doc(uid).get();
@@ -32,6 +36,7 @@ class UserService {
 
   /// ØªØ¹ÙŠÙŠÙ† Ø£Ùˆ ØªØ­Ø¯ÙŠØ« Ø¯ÙˆØ± Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Firestore.
   /// Sets or updates the user's role in Firestore.
+  /// حفظ دور المستخدم أو تحديثه في Firestore.
   Future<void> setUserRole(String uid, String role) async {
     await _usersCollection.doc(uid).set(
       {'role': role, 'updatedAt': FieldValue.serverTimestamp()},
@@ -41,6 +46,7 @@ class UserService {
 
   /// Ø¬Ù„Ø¨ Ø¨ÙŠØ§Ù†Ø§Øª Ù…Ù„Ù Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„ÙƒØ§Ù…Ù„Ø©.
   /// Fetches the full user profile document.
+  /// جلب بيانات الملف الشخصي الكاملة لمستخدم محدد.
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
       final doc = await _usersCollection.doc(uid).get();
@@ -55,6 +61,7 @@ class UserService {
   }
 
   /// Fetches the current signed-in user's profile from the users collection.
+  /// جلب ملف المستخدم الحالي بعد التحقق من وجود جلسة تسجيل دخول.
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) return null;
@@ -62,12 +69,14 @@ class UserService {
   }
 
   /// Creates a new user profile document using the existing users collection.
+  /// إنشاء مستند الملف الشخصي الأولي بعد نجاح التسجيل عبر Firebase Auth.
   Future<void> createUserProfile({
     required String uid,
     required String displayName,
     required String email,
     required String role,
   }) async {
+    // حفظ البيانات الأساسية وربطها بمعرّف المستخدم القادم من Firebase Auth.
     await _usersCollection.doc(uid).set({
       'displayName': displayName,
       'email': email,
@@ -77,6 +86,7 @@ class UserService {
   }
 
   /// Updates the current signed-in user's profile fields.
+  /// تحديث حقول الملف الشخصي للمستخدم الحالي بدون استبدال المستند بالكامل.
   Future<void> updateCurrentUserProfile({
     String? displayName,
     String? email,
@@ -89,6 +99,7 @@ class UserService {
       throw Exception('User not authenticated');
     }
 
+    // تجميع الحقول المرسلة فقط حتى لا يتم تعديل بيانات غير مطلوبة.
     final updates = <String, dynamic>{
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -106,6 +117,7 @@ class UserService {
   }
 
   /// Fetches only the displayName field for a given user.
+  /// جلب اسم العرض فقط لاستخدامه في الشاشات أو الرسائل المختصرة.
   Future<String> getUserDisplayName(String uid) async {
     try {
       final doc = await _usersCollection.doc(uid).get();

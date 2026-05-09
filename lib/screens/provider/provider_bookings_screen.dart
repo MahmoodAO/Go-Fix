@@ -6,6 +6,7 @@ import 'package:homemate/widgets/provider_booking_card.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
 /// Provider Bookings Screen – shows ONLY accepted/rejected bookings (no pending).
+/// شاشة طلبات المزود، وتعرض الحجوزات المقبولة أو المرفوضة مع دعم التصفية.
 class ProviderBookingsScreen extends StatefulWidget {
   final String? serviceId;
   const ProviderBookingsScreen({super.key, this.serviceId});
@@ -16,18 +17,22 @@ class ProviderBookingsScreen extends StatefulWidget {
 
 class _ProviderBookingsScreenState extends State<ProviderBookingsScreen> {
   // 'all' now means accepted + rejected (no pending)
+  /// الفلتر الحالي المستخدم لعرض حالة الطلبات.
   String _selectedFilter = 'all'; // 'all', 'accepted', 'rejected'
 
   @override
+  /// بناء شاشة الطلبات مع بث مباشر من Firestore وتصفية حسب الحالة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = FirebaseAuth.instance.currentUser;
 
+    // لا يمكن تحميل الطلبات بدون وجود مزود خدمة مسجل الدخول.
     if (user == null) {
       return _buildEmptyState(isDark, Icons.login_rounded,
           'يرجى تسجيل الدخول لعرض الطلبات');
     }
 
+    // الاستماع المباشر لحجوزات المزود الحالي مع إمكانية ربطها بخدمة محددة.
     return StreamBuilder<List<Booking>>(
       stream: BookingService()
           .getProviderBookingsStream(user.uid, serviceId: widget.serviceId),
@@ -46,6 +51,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen> {
         }
 
         // Exclude pending bookings entirely from this screen
+        // استبعاد الطلبات المعلقة من هذه الشاشة لأنها تعرض فقط الحالات النهائية.
         final allBookings = (snapshot.data ?? [])
             .where((b) => b.bookingStatus != 'pending')
             .toList();
@@ -53,6 +59,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen> {
         var bookings = allBookings;
 
         // Filter logic
+        // تطبيق الفلتر الحالي على النتائج المعروضة.
         if (_selectedFilter != 'all') {
           bookings = allBookings
               .where((b) => b.bookingStatus == _selectedFilter)
@@ -95,6 +102,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen> {
     );
   }
 
+  /// بناء شريط فلاتر بسيط لتبديل حالة الطلبات المعروضة.
   Widget _buildFilterStrip(bool isDark) {
     final filters = [
       {'value': 'all', 'label': 'الكل'},
@@ -140,6 +148,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen> {
     );
   }
 
+  /// بناء واجهة فارغة أو بديلة عند عدم وجود طلبات قابلة للعرض.
   Widget _buildEmptyState(bool isDark, IconData icon, String message) {
     return Center(
       child: Column(

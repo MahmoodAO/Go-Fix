@@ -6,6 +6,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 
 /// شاشة تفاصيل الحجز لمزوّد الخدمة – عرض تفاصيل الحجز مع أزرار قبول/رفض/إكمال.
 /// Provider Booking Details Screen – view full booking details and manage status.
+/// شاشة تفاصيل طلب المزود، وتعرض الحجز مع إجراءات القبول والرفض والتنفيذ.
 class ProviderBookingDetailsScreen extends StatefulWidget {
   static const screenRoute = '/provider_booking_details';
 
@@ -18,11 +19,14 @@ class ProviderBookingDetailsScreen extends StatefulWidget {
 
 class _ProviderBookingDetailsScreenState
     extends State<ProviderBookingDetailsScreen> {
+  /// مؤشر يوضح أن أحد إجراءات تحديث الحالة قيد التنفيذ.
   bool _isActioning = false;
 
+  /// تحديث حالة الحجز وفق الإجراء الذي يختاره مزود الخدمة.
   Future<void> _updateStatus(Booking booking, String newStatus) async {
     setState(() => _isActioning = true);
     try {
+      // تنفيذ الإجراء المناسب على الحجز بحسب الحالة المطلوبة.
       final bookingService = BookingService();
       switch (newStatus) {
         case 'accepted':
@@ -68,10 +72,13 @@ class _ProviderBookingDetailsScreenState
   }
 
   @override
+  /// بناء شاشة التفاصيل بعد قراءة كائن الحجز المرسل عبر المسار.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // استقبال كائن الحجز القادم من الشاشة السابقة.
     final booking = ModalRoute.of(context)?.settings.arguments as Booking?;
 
+    // عرض حالة بديلة إذا لم تصل بيانات الحجز.
     if (booking == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('تفاصيل الطلب')),
@@ -224,6 +231,7 @@ class _ProviderBookingDetailsScreenState
     );
   }
 
+  /// بناء أزرار الإجراءات المناسبة بحسب حالة الطلب الحالية.
   List<Widget> _buildActionButtons(Booking booking, bool isDark, Color primary) {
     final status = booking.bookingStatus;
     final widgets = <Widget>[];
@@ -318,6 +326,7 @@ class _ProviderBookingDetailsScreenState
     return widgets;
   }
 
+  /// بناء بطاقة موحدة الشكل لعرض أقسام التفاصيل.
   Widget _buildCard({
     required bool isDark,
     required Color surfaceColor,
@@ -338,6 +347,7 @@ class _ProviderBookingDetailsScreenState
     );
   }
 
+  /// بناء عنوان قسم داخل البطاقة مع أيقونة توضيحية.
   Widget _buildCardTitle(String title, IconData icon, Color primary, Color textPrimary) {
     return Row(
       children: [
@@ -356,6 +366,7 @@ class _ProviderBookingDetailsScreenState
     );
   }
 
+  /// بناء صف موحد لعرض عنصر من تفاصيل الطلب.
   Widget _buildDetailRow(String label, String value, Color textPrimary, Color textSecondary) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -389,6 +400,7 @@ class _ProviderBookingDetailsScreenState
     );
   }
 
+  /// تحويل حالة الحجز إلى نص ولون وأيقونة مناسبة للعرض.
   StatusInfo _getStatusInfo(String status) {
     return StatusInfo.fromBookingStatus(status);
   }

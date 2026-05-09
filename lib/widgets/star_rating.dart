@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homemate/services/service_service.dart';
 import 'package:homemate/core/theme/app_theme.dart';
 
+/// عنصر تقييم النجوم، ويعرض متوسط التقييم ويسمح للمستخدم بإرسال تقييمه.
 class StarRating extends StatefulWidget {
   final String serviceId;
   final double averageRating;
@@ -23,9 +24,12 @@ class StarRating extends StatefulWidget {
 }
 
 class _StarRatingState extends State<StarRating> {
+  /// مؤشر يوضح أن عملية إرسال التقييم ما زالت قيد التنفيذ.
   bool _isSubmitting = false;
 
+  /// إرسال تقييم المستخدم للخدمة بعد التحقق من تسجيل الدخول.
   void _rateService(int rating) async {
+    // لا يمكن إرسال التقييم إلا من مستخدم مسجل الدخول.
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,6 +43,7 @@ class _StarRatingState extends State<StarRating> {
     });
 
     try {
+      // حفظ التقييم في Firestore مع تحديث المتوسط وعدد التقييمات.
       await ServiceService().rateService(widget.serviceId, user.uid, rating.toDouble());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -60,6 +65,7 @@ class _StarRatingState extends State<StarRating> {
     }
   }
 
+  /// عرض نافذة لاختيار عدد النجوم قبل إرسال التقييم.
   void _showRatingDialog() {
     int selectedRating = 5;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -129,11 +135,13 @@ class _StarRatingState extends State<StarRating> {
   }
 
   @override
+  /// بناء واجهة التقييم مع بث مباشر لتحديث المتوسط وعدد المراجعات.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textPrimary = AppTheme.getTextPrimary(isDark);
     final textSecondary = AppTheme.getTextSecondary(isDark);
 
+    // الاستماع المباشر لمستند الخدمة لإظهار أي تحديث في التقييمات فورًا.
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('services').doc(widget.serviceId).snapshots(),
       builder: (context, snapshot) {

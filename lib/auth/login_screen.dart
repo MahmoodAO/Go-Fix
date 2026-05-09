@@ -7,6 +7,7 @@ import 'package:homemate/core/utils/local_storage_service.dart';
 import 'package:homemate/services/auth_service.dart';
 import 'package:homemate/services/user_service.dart';
 
+/// شاشة تسجيل الدخول، مسؤولة عن إدخال بيانات المستخدم والتحقق منها عبر Firebase Auth.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -16,19 +17,24 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  /// متحكمات حقول البريد الإلكتروني وكلمة المرور.
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  /// خدمة المصادقة المستخدمة لتنفيذ عمليات الدخول واستعادة كلمة المرور.
   final AuthService _authService = AuthService();
 
+  /// متغيرات التحكم في حالات التحميل وإظهار كلمة المرور.
   bool _isLoading = false;
   bool _isSuccessLoading = false;
   bool _obscurePassword = true;
 
+  /// متحكمات الحركة الخاصة بظهور عناصر الشاشة.
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
   @override
+  /// تهيئة الحركات الافتتاحية عند فتح شاشة تسجيل الدخول.
   void initState() {
     super.initState();
 
@@ -55,12 +61,14 @@ class _LoginScreenState extends State<LoginScreen>
     _animController.forward();
   }
 
+  /// تنفيذ عملية تسجيل الدخول باستخدام البريد الإلكتروني وكلمة المرور.
   Future<bool> signIn() async {
     try {
       if (kDebugMode) {
         debugPrint('[LOGIN] Attempting sign in: ${_emailController.text.trim()}');
       }
 
+      // تنفيذ المصادقة الفعلية عبر Firebase Auth.
       await _authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -102,11 +110,14 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  /// الانتقال إلى شاشة إنشاء حساب جديد.
   void openSigupScreen() {
     Navigator.of(context).pushReplacementNamed('signup');
   }
 
+  /// معالجة زر تسجيل الدخول مع التحقق الأولي ثم حفظ الجلسة محليًا.
   Future<void> _handleLogin() async {
+    // التحقق من إدخال البيانات الأساسية قبل إرسال الطلب.
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -130,11 +141,13 @@ class _LoginScreenState extends State<LoginScreen>
 
     try {
       // Save login state locally
+      // حفظ حالة تسجيل الدخول ومعرّف المستخدم محليًا لتسريع الدخول لاحقًا.
       await LocalStorageService.setLoggedIn(true);
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
       await LocalStorageService.setUserId(uid);
 
       // Read user role from Firestore and cache locally
+      // جلب دور المستخدم من Firestore لتحديد الشاشة المناسبة بعد الدخول.
       final role = await UserService().getUserRole(uid);
       await LocalStorageService.setUserRole(role);
 
@@ -149,6 +162,7 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (mounted) {
         // Route by role: admin → /admin, provider → provider_tabscreen, customer → tabscreen
+        // التوجيه يعتمد على نوع المستخدم داخل النظام.
         String destination;
         if (role == 'admin') {
           destination = '/admin';
@@ -169,6 +183,7 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  /// إرسال رابط إعادة تعيين كلمة المرور إلى البريد الإلكتروني المدخل.
   Future<void> _handleForgotPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -181,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen>
     }
 
     try {
+      // تنفيذ طلب إعادة التعيين عبر Firebase Auth.
       await _authService.sendPasswordResetEmail(email: email);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   @override
+  /// التخلص من المتحكمات عند إغلاق الشاشة لتجنب تسرب الذاكرة.
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -214,6 +231,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   @override
+  /// بناء واجهة تسجيل الدخول مع دعم حالات التحميل والتنقل.
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final topHeight = mq.size.height * 0.35;
@@ -469,6 +487,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
             ),
+            // إظهار طبقة تحميل نجاح قصيرة قبل الانتقال النهائي.
             if (_isSuccessLoading) const LoadingOverlay(),
           ],
         ),

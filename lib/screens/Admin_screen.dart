@@ -6,6 +6,7 @@ import 'package:homemate/core/utils/local_storage_service.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 import 'package:homemate/services/auth_service.dart';
 
+/// شاشة الإدارة، وتتيح مراجعة الخدمات المعلقة وقبولها أو رفضها وإصدار التقارير.
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 
@@ -14,15 +15,19 @@ class AdminScreen extends StatefulWidget {
 }
 
 class _AdminScreenState extends State<AdminScreen> {
+  /// خدمة المصادقة المستخدمة لتسجيل خروج المشرف.
   final AuthService _authService = AuthService();
 
+  /// تحديث حالة اعتماد الخدمة داخل Firestore بحسب قرار الإدارة.
   Future<void> _updateServiceStatus(String serviceId, String status) async {
     try {
       final docRef =
           FirebaseFirestore.instance.collection('services').doc(serviceId);
 
+      // تجهيز التعديلات الأساسية على حالة اعتماد الخدمة.
       final updates = <String, dynamic>{'approvalStatus': status};
 
+      // عند القبول يتم التأكد من وجود حقول التقييم الافتراضية اللازمة لاحقًا.
       if (status == 'accepted') {
         final docSnap = await docRef.get();
         if (docSnap.exists) {
@@ -64,6 +69,7 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
+  /// تسجيل خروج المشرف ومسح حالة الجلسة المحلية.
   Future<void> _logout() async {
     await _authService.signOut();
     await LocalStorageService.setLoggedIn(false);
@@ -71,6 +77,7 @@ class _AdminScreenState extends State<AdminScreen> {
     if (mounted) Navigator.pushReplacementNamed(context, 'login');
   }
 
+  /// عرض نافذة تأكيد قبل الانتقال إلى شاشة التقارير.
   void _generateReport() {
     showDialog(
       context: context,
@@ -120,6 +127,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   @override
+  /// بناء واجهة الإدارة مع بث مباشر للخدمات المعلقة.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -195,6 +203,7 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ),
           Expanded(
+            // الاستماع المباشر للخدمات التي ما زالت بانتظار قرار الإدارة.
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('services')
@@ -245,6 +254,7 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
+  /// بناء بطاقة خدمة معلقة مع أزرار القبول والرفض.
   Widget _buildServiceCard(
     String docId,
     Map<String, dynamic> data,
@@ -442,6 +452,7 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
+  /// بناء حالة فارغة عندما لا توجد خدمات بانتظار المراجعة.
   Widget _buildEmptyState() {
     return Center(
       child: Column(

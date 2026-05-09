@@ -5,6 +5,7 @@ import '../models/service.dart';
 import '../services/favorites_services.dart';
 import '../services/service_service.dart';
 
+/// شاشة خدمات التصنيف، وتعرض الخدمات المقبولة ضمن تصنيف محدد مع دعم المفضلة والفلاتر.
 class CategoryServicesScreen extends StatefulWidget {
   static const screenRoute = '/category-servicse';
   final Map<String, bool>? filters;
@@ -17,11 +18,13 @@ class CategoryServicesScreen extends StatefulWidget {
 }
 
 class CategoryServicesScreenState extends State<CategoryServicesScreen> {
+  /// عنوان التصنيف ومعرّفه وخدمة المفضلة الخاصة بالمستخدم الحالي.
   late String categoryTitle;
   late String categoryId;
   final FavoritesService _favoritesService = FavoritesService();
 
   @override
+  /// قراءة معرّف التصنيف واسمه من المسار عند فتح الشاشة.
   void didChangeDependencies() {
     super.didChangeDependencies();
 
@@ -33,6 +36,7 @@ class CategoryServicesScreenState extends State<CategoryServicesScreen> {
   }
 
   @override
+  /// بناء شاشة خدمات التصنيف مع بث مباشر للمفضلة والخدمات.
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -44,6 +48,7 @@ class CategoryServicesScreenState extends State<CategoryServicesScreen> {
 
     return Scaffold(
       backgroundColor: scaffoldColor,
+      // الاستماع المباشر للمفضلة حتى تتحدث أيقونات القلب فورًا.
       body: StreamBuilder<List<String>>(
         stream: _favoritesService.getFavoriteServiceIdsStream(),
         builder: (context, snapshot) {
@@ -79,6 +84,7 @@ class CategoryServicesScreenState extends State<CategoryServicesScreen> {
                   centerTitle: false,
                 ),
               ),
+              // الاستماع المباشر للخدمات المقبولة ضمن التصنيف المحدد.
               StreamBuilder<List<Service>>(
                 stream: ServiceService().getAcceptedCategoryServicesStream(categoryId),
                 builder: (context, serviceSnapshot) {
@@ -96,6 +102,7 @@ class CategoryServicesScreenState extends State<CategoryServicesScreen> {
 
                   var services = serviceSnapshot.data ?? [];
                   
+                  // تطبيق فلاتر المدن القادمة من الشاشة السابقة عند تفعيلها.
                   // Apply location filters
                   final Map<String, bool> activeFilters = widget.filters ?? {};
                   final anyFilterActive = activeFilters.values.any((v) => v == true);
@@ -154,6 +161,7 @@ class CategoryServicesScreenState extends State<CategoryServicesScreen> {
     );
   }
 
+  /// بناء واجهة بديلة عند عدم وجود خدمات متاحة لهذا التصنيف.
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
 

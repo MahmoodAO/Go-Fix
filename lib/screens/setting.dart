@@ -8,6 +8,7 @@ import 'package:homemate/screens/profile_info_screen.dart';
 import 'package:homemate/services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// شاشة الإعدادات، وتجمع إعدادات الحساب والمظهر والمعلومات العامة وتسجيل الخروج.
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
 
@@ -16,9 +17,11 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  /// حالة الإشعارات وخدمة المصادقة المستخدمة في تسجيل الخروج.
   bool _notificationsEnabled = true;
   final AuthService _authService = AuthService();
 
+  /// بناء عنوان فرعي منظم لكل قسم داخل شاشة الإعدادات.
   Widget _buildSectionHeader(String title) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textHint = AppTheme.getTextHint(isDark);
@@ -37,6 +40,7 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
+  /// بناء عنصر إعداد موحد يدعم الأيقونة والنص والقيمة والانتقال أو المفتاح.
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
@@ -136,6 +140,7 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   @override
+  /// بناء واجهة الإعدادات مع معلومات المستخدم والثيم وتسجيل الخروج.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -160,6 +165,7 @@ class _SettingScreenState extends State<SettingScreen> {
           children: [
             GestureDetector(
               onTap: () {
+                // فتح شاشة الملف الشخصي عند الضغط على بطاقة المستخدم.
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const ProfileInfoScreen(),
@@ -313,6 +319,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     isLast: true,
                     trailing: Switch.adaptive(
                       value: themeProvider.isDarkMode,
+                      // تبديل وضع الإضاءة عبر المزود المسؤول عن الثيم.
                       onChanged: (_) => themeProvider.toggleTheme(),
                       activeColor: primary,
                     ),
@@ -376,6 +383,7 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
+  /// عرض نافذة تأكيد قبل مسح الجلسة المحلية وتسجيل الخروج.
   void _showLogoutDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = AppTheme.getSurface(isDark);
@@ -415,6 +423,7 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // حذف بيانات الجلسة المحلية ثم تنفيذ تسجيل الخروج من Firebase Auth.
               await LocalStorageService.clear();
               await _authService.signOut();
               if (mounted) {
@@ -433,10 +442,12 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 }
 
+/// شاشة "عن التطبيق"، وتعرض وصفًا مختصرًا ووسيلة التواصل مع الدعم.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
+  /// بناء صفحة تعريفية عن التطبيق مع معلومات التواصل.
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = AppTheme.getScaffoldBg(isDark);
@@ -605,6 +616,7 @@ class AboutScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         InkWell(
                           onTap: () {
+                            // فتح البريد الإلكتروني الافتراضي للتواصل مع الدعم الفني.
                             launchUrl(Uri.parse("mailto:gofix.app@gmail.com"));
                           },
                           child: Row(
