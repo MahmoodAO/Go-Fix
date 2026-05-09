@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; /// بعطيك أشياء الواجهة
 import 'package:flutter/services.dart';
 import 'package:homemate/models/category.dart';
 import 'package:homemate/models/service.dart';
@@ -10,7 +10,7 @@ import 'package:homemate/core/theme/app_theme.dart';
 import 'package:homemate/core/utils/price_utils.dart';
 
 /// شاشة إضافة أو تعديل خدمة، وتدير إدخال بيانات الخدمة وحفظها في Firestore.
-class AddService extends StatefulWidget {
+class AddService extends StatefulWidget { /// StatefulWidget : هاي الشاشة فيها بيانات بتتغير اثناء الاستخدام 
   final Service? serviceToEdit;
 
   const AddService({super.key, this.serviceToEdit});
