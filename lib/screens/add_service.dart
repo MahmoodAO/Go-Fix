@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode; /// عشان يطلع ايرور الي في حال كان فيه خطأ
 import 'package:flutter/material.dart'; /// بعطيك أشياء الواجهة
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; 
 import 'package:homemate/models/category.dart';
 import 'package:homemate/models/service.dart';
 import 'package:homemate/services/category_service.dart';
@@ -145,12 +145,11 @@ class _AddServiceState extends State<AddService> {
   /// حفظ النموذج بعد التحقق من البيانات وإنشاء الخدمة أو تحديثها.
   Future<void> _saveForm() async {
     // التحقق من صحة جميع الحقول قبل بدء الحفظ.
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return; /// يخلي البوتون تصير Loading 
 
-    setState(() => _isSubmitting = true);
-
+    setState(() => _isSubmitting = true); 
     try {
-      // التحقق من وجود مستخدم مسجل قبل السماح بإضافة خدمة.
+      // التحقق من وجود مستخدم مسجل قبل السماح بإضافة خدمة
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,8 +159,8 @@ class _AddServiceState extends State<AddService> {
         return;
       }
 
-      final title = _titleController.text.trim();
-      final description = _descriptionController.text.trim();
+      final title = _titleController.text.trim(); /// بحذف الفراغات من البداية والنهاية
+      final description = _descriptionController.text.trim(); /// يوخذ وصف للخدمة
       final phone = _phoneController.text.trim();
       final location = _locationController.text.trim();
       // تحليل السعر كنص وتحويله إلى قيمة رقمية صالحة للحفظ.
@@ -194,7 +193,7 @@ class _AddServiceState extends State<AddService> {
 
       // التمييز بين إنشاء خدمة جديدة وتحديث خدمة موجودة.
       if (widget.serviceToEdit != null) {
-        await _serviceService.updateProviderService(
+        await _serviceService.updateProviderService(  /// بحدث الخدمة الموجودة بال firestore
           serviceId: widget.serviceToEdit!.id,
           categoryId: _selectedCategory!.id,
           title: title,
@@ -204,7 +203,7 @@ class _AddServiceState extends State<AddService> {
           startingPrice: startingPrice,
         );
       } else {
-        await _serviceService.createProviderService(
+        await _serviceService.createProviderService(  /// اذا ما في خدمة قديمة بنشئ خدمة جديدة بال Firestore
           categoryId: _selectedCategory!.id,
           title: title,
           description: description,
@@ -214,7 +213,7 @@ class _AddServiceState extends State<AddService> {
         );
       }
 
-      if (!mounted) return;
+      if (!mounted) return; /// اذا الشاشة لسا مفتوحة:
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -227,7 +226,7 @@ class _AddServiceState extends State<AddService> {
       );
       // إرجاع نتيجة نجاح للشاشة السابقة بعد اكتمال العملية.
       Navigator.of(context).pop(true);
-    } catch (e) {
+    } catch (e) { /// :في حال صار اخطاء برجع يدخل هون if (!mounted) return;
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +234,7 @@ class _AddServiceState extends State<AddService> {
       );
     } finally {
       if (mounted) {
-        setState(() => _isSubmitting = false);
+        setState(() => _isSubmitting = false);/// بوقف التحميل
       }
     }
   }
